@@ -2,13 +2,18 @@
  
 // What pin to connect the sensor to
 #define THERMISTORPIN A0 
- 
+
+// XBEE setup
+#include <SoftwareSerial.h>
+SoftwareSerial XBee(2, 3); // RX, TX
+
 void setup(void) {
+  XBee.begin(9600);
   Serial.begin(9600);
 }
  
 void loop(void) {
-  float reading;
+  float reading;  
  
   reading = analogRead(THERMISTORPIN);
  
@@ -20,6 +25,7 @@ void loop(void) {
   reading = SERIESRESISTOR / reading;
   Serial.print("Thermistor resistance "); 
   Serial.println(reading);
+  XBee.println(reading);
  
   delay(1000);
 }
