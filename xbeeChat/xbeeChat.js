@@ -14,7 +14,10 @@ portConfig = {
 var sp;
 sp = new SerialPort.SerialPort(portName, portConfig);
 
-
+function print_avg()
+{
+  console.log("average computed = %d\ncount=%d", avg, count);
+}
 function shift_array(arr,new_data)
 {
   var i;
@@ -49,16 +52,16 @@ function check_source(msg)
     local_data = data_char*(Math.pow(10,len-i-2)) + local_data;
 
   }
-  console.log(local_data);
+  //console.log(local_data);
   acc = acc + local_data;
   shift_array(old,local_data);
   acc = acc-old[0];
   avg = acc/4;
   count++;
-  console.log("Average on %d reception is %f",count,avg);
+  //setInterval(print_avg, 2000);
 }
 
-
+setInterval(print_avg,2000);
 app.get('/', function(req, res){
   res.sendfile('index.html');
 });
@@ -80,8 +83,13 @@ http.listen(3000, function(){
 sp.on("open", function () {
   console.log('open');
   sp.on('data', function(data) {
-    console.log('data received: ' + data);
+    //console.log('data received: ' + data);
     io.emit("chat message", "An XBee says: " + data);
     check_source(data);
   });
 });
+
+
+
+
+
