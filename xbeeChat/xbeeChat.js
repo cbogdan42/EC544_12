@@ -2,7 +2,7 @@ var SerialPort = require("serialport");
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-
+var count = 0;
 var portName = process.argv[2],
 portConfig = {
 	baudRate: 9600,
@@ -50,7 +50,8 @@ function check_source(msg)
   shift_array(old,local_data);
   acc = acc-old[0];
   avg = acc/4;
-  console.log(avg);
+  count++;
+  console.log("Average on %d reception is %f",count,avg);
 }
 
 
