@@ -2,11 +2,14 @@ var SerialPort = require("serialport");
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var acc = 0;
+var avg = 0;
+var old = new Array(0,0,0,0,0);
 var count = 0;
 var portName = process.argv[2],
 portConfig = {
-	baudRate: 9600,
-	parser: SerialPort.parsers.readline("\n")
+  baudRate: 9600,
+  parser: SerialPort.parsers.readline("\n")
 };
 var sp;
 sp = new SerialPort.SerialPort(portName, portConfig);
@@ -34,18 +37,19 @@ function check_source(msg)
   var data_char;
   var i;
   var local_data = 0;
-  //console.log(typeof(msg));
+  //console.log(msg); 
   var len = msg.length;
-  for(i=len-1;i>=0;i--)
+  //console.log(len);
+  for(i=len-2;i>=0;i--)
   {
     
     data_char = msg.charCodeAt(i);
     data_char = data_char-48;
     //console.log(data_char);
-    local_data = data_char*(Math.pow(10,len-i-1)) + local_data;
+    local_data = data_char*(Math.pow(10,len-i-2)) + local_data;
 
   }
-  //console.log(local_data);
+  console.log(local_data);
   acc = acc + local_data;
   shift_array(old,local_data);
   acc = acc-old[0];
@@ -81,4 +85,3 @@ sp.on("open", function () {
     check_source(data);
   });
 });
-
