@@ -1,0 +1,40 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs', '/usr/bin/npm', 'uninstall', 'serialport' ]
+2 info using npm@2.15.9
+3 info using node@v4.5.0
+4 verbose unbuild node_modules/serialport
+5 info preuninstall serialport@4.0.1
+6 info uninstall serialport@4.0.1
+7 verbose unbuild rmStuff serialport@4.0.1 from /home/aravind/Downloads/git/EC544_demos/node_modules
+8 silly gentlyRm /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list is being gently removed
+9 silly gentlyRm verifying /home/aravind/Downloads/git/EC544_demos is an npm working directory
+10 silly gentlyRm /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-term is being gently removed
+11 silly gentlyRm verifying /home/aravind/Downloads/git/EC544_demos is an npm working directory
+12 silly gentlyRm containing path /home/aravind/Downloads/git/EC544_demos is under npm's control, in /home/aravind/Downloads/git/EC544_demos
+13 silly gentlyRm deletion target /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list is under /home/aravind/Downloads/git/EC544_demos
+14 verbose gentlyRm vacuuming from /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list up to /home/aravind/Downloads/git/EC544_demos
+15 silly gentlyRm containing path /home/aravind/Downloads/git/EC544_demos is under npm's control, in /home/aravind/Downloads/git/EC544_demos
+16 silly gentlyRm deletion target /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-term is under /home/aravind/Downloads/git/EC544_demos
+17 verbose gentlyRm vacuuming from /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-term up to /home/aravind/Downloads/git/EC544_demos
+18 silly vacuum-fs removing /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list
+19 silly vacuum-fs removing /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-term
+20 verbose stack Error: EACCES: permission denied, unlink '/home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list'
+20 verbose stack     at Error (native)
+21 verbose cwd /home/aravind/Downloads/git/EC544_demos/demos/xbeeChat
+22 error Linux 4.4.0-21-generic
+23 error argv "/usr/bin/nodejs" "/usr/bin/npm" "uninstall" "serialport"
+24 error node v4.5.0
+25 error npm  v2.15.9
+26 error path /home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list
+27 error code EACCES
+28 error errno -13
+29 error syscall unlink
+30 error Error: EACCES: permission denied, unlink '/home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list'
+30 error     at Error (native)
+30 error  { [Error: EACCES: permission denied, unlink '/home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list']
+30 error   errno: -13,
+30 error   code: 'EACCES',
+30 error   syscall: 'unlink',
+30 error   path: '/home/aravind/Downloads/git/EC544_demos/node_modules/.bin/serialport-list' }
+31 error Please try running this command again as root/Administrator.
+32 verbose exit [ -13, true ]
