@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <title>Example</title>
+    <meta http-equiv="refresh" content="2">
+  </head>
+  <body>
+    <iframe id="idIframe" onload="resizeIframe(this)" src="files/file.txt" width="500">
+    </iframe>
+    <script type="text/javascript">
+  	function resizeIframe() {
+      var iFrameID = document.getElementById('idIframe');
+      if(iFrameID) {
+      		iFrameID.height = "";
+            iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight + "px";
+      }   
+  }
+</script>  
+  </body>
+</html>
