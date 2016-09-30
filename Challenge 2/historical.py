@@ -3,39 +3,59 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from time import sleep
+import sqlite
 
 # Note that in order for graphics to be externalized, it must be changed in the spyder console
 
-# Check if file exists
-find_file_timeout = 0
-timeout = 0
+# Database Name
 
-while True:
-    try:
-        test = np.loadtxt("data.txt")
-        break
-    except:
-        print("Data File does not yet exist")
-        sleep(.1)
-        find_file_timeout += 1
-        if find_file_timeout > 20:
-            print("Timeout, File Not Found")
-            timeout = 1
-            break
+db_filename = 'data_from_sensor.db'
+connection = sqlite.connect(db_filename)
+cursor = connection.cursor()
+
+# Figure name
+hist_fig_name = 'hist.jpg'
+current_fig_name = 'current.jpg'
+
+# Averaging Values
+delta_t = 5
         
 plt.figure()
 
 # Main piece of code
-if timeout == 0:
-    readrows = 0
+   
     
-    id = []
-    temp = []
-    time = []
+while True:
     
-    while True:
-    
-        # Import data from file
+### Create Historical Graph w/ Min and Max and Average Per Day
+
+# Query Database for list of all dates available
+
+# For Each Date, Calculate Average, Max and Min
+
+### Create Historical Graph for each Sensor
+
+# Query Database for list of all sensors
+
+# For Each Sensor, grab all data ordered on date then time
+
+# Print to Plot, Av/Max/Min on top, All datapoints below
+
+(ax1,ax2) = plt.subplots(2,1)
+ax1.plot()
+ax2.plot()
+savefig(hist_fig_name)
+
+### Create Current Graph
+
+# Query Database for all data in last delta_t min and take average
+
+latest_data = 
+current_avg = sum(latest_data)/len(latest_data)
+
+
+
+# Import data from file
         new_data = np.loadtxt("data.txt",skiprows = readrows, dtype = int)
 
         #find length of read rows
