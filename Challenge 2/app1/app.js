@@ -9,9 +9,8 @@ var io = require('socket.io')(http);
 //Add routes here
 var routes = require('./routes/index');
 var users = require('./routes/users');
-var charts = require('./routes/charts');                                
-var data_history = require('./routes/data_history');                
-var file_display = require('./routes/file_display');                
+var charts = require('./routes/charts');                            
+var data_display = require('./routes/data_display');                
 
 
 /*var favicon = require('serve-favicon');
@@ -42,9 +41,8 @@ app.use('/', routes);
 app.use('/users', users);
 
 
-app.use('/charts', charts);               
-app.use('/data_history', data_history);
-app.use('/file_display', file_display);
+app.use('/charts', charts);              
+app.use('/data_display', data_display);
 
 
 io.on('connection', function(socket){

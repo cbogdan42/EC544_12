@@ -104,6 +104,7 @@ function compute_avg(msg, len, source)          //Calculate average based on the
   shift_array(old,local_data);
   acc = acc-old[0];
   avg = acc/num_sensors;
+  print_avg();
 
 }
 
@@ -134,10 +135,10 @@ function shift_array(arr,new_data)          //Function used to shift the array t
 
 
 function write_to_db(source, value, time, date){
-  console.log("Inside");
+  //console.log("Inside");
   db.serialize(function() {
-    db.run("CREATE TABLE IF NOT EXISTS items (sensor_id INTEGER, sensor_output FLOAT, time TEXT, date TEXT)");
-    var stmt = db.prepare("INSERT INTO items VALUES(?,?,?,?)");
+    db.run("CREATE TABLE IF NOT EXISTS sensor_data (sensor_id INTEGER, sensor_output FLOAT, time TEXT, date TEXT)");
+    var stmt = db.prepare("INSERT INTO sensor_data VALUES(?,?,?,?)");
 
     stmt.run(source,value,time,date);
 

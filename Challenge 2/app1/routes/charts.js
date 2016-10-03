@@ -5,7 +5,7 @@ var dir =
 /* GET home page. */
 console.log(__dirname)
 router.get('/', function(req, res, next) {
-  res.sendfile(__dirname + '/html/hello.html');
+  res.sendfile(__dirname + '/html/charts.html');
 });
 
 module.exports = router;
