@@ -138,7 +138,7 @@ while True:
     plt.savefig(current_ind_fig_name)
     
     #Move generated images to directory where the server reads it from
-    cmd = "mv img1.jpg img2.jpg ./data_server/public/images"
+    cmd = "cp current_avg.jpg current_ind.jpg hist_all.jpg hist_avg.jpg ./data_server/public/images"
     os.system(cmd)
 
     # Wait for a bit before updating again
