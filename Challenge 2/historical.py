@@ -8,6 +8,7 @@ import PIL
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
+import os
 
 # Note that in order for graphics to be externalized, it must be changed in the spyder console
 
@@ -135,6 +136,10 @@ while True:
     # Print to Plot, Different Temps w/ Nest Avg
     plt.bar(sensors,current_avg_ind, color = 'blue')
     plt.savefig(current_ind_fig_name)
+    
+    #Move generated images to directory where the server reads it from
+    cmd = "mv img1.jpg img2.jpg ./data_server/public/images"
+    os.system(cmd)
 
     # Wait for a bit before updating again
     sleep(update)
