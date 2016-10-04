@@ -2,14 +2,25 @@ var SerialPort = require("serialport");
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var fs = require("fs");
+var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database('data_from_sensor.db');
+
+var str = '\0';										
 var acc = 0;
 var avg = 0;
-//var old = new Array(0,0,0,0,0);           //Array acting as the shift register
 var old = [];
 var timeout_val = 20000;                      //Timeout after 20s
 var data_time = [];
 
+var file_path = '../data_server/public/files/file.txt';
+
 var num_sensors = 3;                      //Constant determining number of sensors in the system
+
+
+fs.writeFile(file_path, 'Sensor_id\tData_received\tTime\tDate', (err) => {
+	if (err) throw err;
+});
 
 
 function init_array()                     //Function to initialize array to hold latest values from sensors
@@ -20,6 +31,28 @@ function init_array()                     //Function to initialize array to hold
     old[i] = 0;
     data_time[i] = 0;
   }
+}
+
+function calculate_time(){								//Calculate the time periodically and store in variable time
+  var date_local = new Date();
+  var hour = date_local.getHours();
+  var time;
+  var minutes = date_local.getMinutes();
+  var seconds = date_local.getSeconds();
+  time = ''
+  time = hour + ':' + minutes + ':' + seconds;
+  return time;
+}
+
+function find_date(){
+  var date_local = new Date();
+  var date;
+  var month = date_local.getMonth() + 1 
+  var day = date_local.getDate() 
+  var year = date_local.getFullYear() 
+  date = ''
+  date = month + '/' + day + '/' + year
+  return date;
 }
 
 
@@ -55,13 +88,24 @@ function compute_avg(msg, len, source)          //Calculate average based on the
   var local_data = 0;
   var str;
   var i;
-  
+  var time;
+  var data;
+  var string_to_write = '\0'
   //Convert string to number
   num = msg.slice(1,len-1);
   str = num.split(".");
   whole_num = str[0];
   decimal_part = str[1];
-  local_data = (whole_num.charCodeAt(0)-48)*10 + whole_num.charCodeAt(1)-48 + (decimal_part.charCodeAt(0)-48)/10 + (decimal_part.charCodeAt(1)-48)/100;
+  local_data = (whole_num.charCodeAt(0)-48)*10 + whole_num.charCodeAt(1)-48 + (decimal_part.charCodeAt(0)-48)/10 + (decimal_part.charCodeAt(1)-48)/100;				//Float value containing sensor data
+
+  //Write to db
+  time = calculate_time();
+  date = find_date();
+  write_to_db(source,local_data,time,date)
+  string_to_write = source + '\t' + local_data + '\t' + time + '\t' + date + '\n'
+  fs.appendFile(file_path, string_to_write, (err) => {
+	if (err) throw err;
+  });
 
   //Calculate average based on input data
   acc = acc + local_data; 
@@ -70,6 +114,7 @@ function compute_avg(msg, len, source)          //Calculate average based on the
   shift_array(old,local_data);
   acc = acc-old[0];
   avg = acc/num_sensors;
+  print_avg();
 
 }
 
@@ -99,6 +144,19 @@ function shift_array(arr,new_data)          //Function used to shift the array t
 }
 
 
+function write_to_db(source, value, time, date){
+  //console.log("Inside");
+  db.serialize(function() {
+    db.run("CREATE TABLE IF NOT EXISTS sensor_data (sensor_id INTEGER, sensor_output FLOAT, time TEXT, date TEXT)");
+    var stmt = db.prepare("INSERT INTO sensor_data VALUES(?,?,?,?)");
+
+    stmt.run(source,value,time,date);
+
+    stmt.finalize();
+  });
+}
+
+
 
 //Initialize ports
 var portName = process.argv[2],
@@ -114,9 +172,6 @@ sp = new SerialPort.SerialPort(portName, portConfig);
 //Initialize array to hold latest values from sensors
 init_array();
 
-//Print calculated average periodically
-setInterval(print_avg,2000);              
-
 //Check if any sensors have timed out
 setInterval(check_for_timeout,10000);     
 
@@ -125,15 +180,6 @@ app.get('/', function(req, res){
   res.sendfile('index.html');
 });
 
-/*io.on('connection', function(socket){
-  console.log('a user connected');
-  socket.on('disconnect', function(){
-  });
-  socket.on('chat message', function(msg){
-    io.emit('chat message', msg);
-    sp.write(msg + "\n");
-  });
-});*/
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
@@ -143,7 +189,6 @@ sp.on("open", function () {
   console.log('open');
   sp.on('data', function(data) {
     //console.log('data received: ' + data);
-    io.emit("chat message", "An XBee says: " + data);
     check_source(data);
   });
 });
