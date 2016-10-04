@@ -8,6 +8,7 @@ import PIL
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
+import os
 
 # Note that in order for graphics to be externalized, it must be changed in the spyder console
 
@@ -116,7 +117,7 @@ while True:
     if latest_data == []:
         current_avg = 'No Recent Data'
     else:
-        current_avg = sum(latest_data)/len(latest_data)
+        current_avg = sum(sum(tuple) for tuple in latest_data)/len(latest_data)
     
     # For each sensor, query database for all data in last delta_t min and take average
     for n in sensors:
@@ -126,7 +127,7 @@ while True:
         if latest_data_ind == []:
             current_avg_ind[n] = 0.0
         else:
-            current_avg_ind[n] = sum(latest_data_ind)/len(latest_data_ind)
+            current_avg_ind[n] = sum(sum(tuple) for tuple in latest_data_ind)/len(latest_data_ind)
     
     # Create Nest fig
     draw.text((0,0),str(current_avg),(255,255,255))
@@ -135,6 +136,10 @@ while True:
     # Print to Plot, Different Temps w/ Nest Avg
     plt.bar(sensors,current_avg_ind, color = 'blue')
     plt.savefig(current_ind_fig_name)
+    
+    #Move generated images to directory where the server reads it from
+    cmd = "mv img1.jpg img2.jpg ./data_server/public/images"
+    os.system(cmd)
 
     # Wait for a bit before updating again
     sleep(update)
