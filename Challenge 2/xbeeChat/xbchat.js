@@ -18,7 +18,7 @@ var file_path = '../data_server/public/files/file.txt';
 var num_sensors = 3;                      //Constant determining number of sensors in the system
 
 
-fs.writeFile(file_name, 'Sensor_id\tData_received\tTime\tDate', (err) => {
+fs.writeFile(file_path, 'Sensor_id\tData_received\tTime\tDate', (err) => {
 	if (err) throw err;
 });
 
