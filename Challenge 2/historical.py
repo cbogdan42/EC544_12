@@ -96,6 +96,7 @@ while True:
     plt.plot(range(len(dates)),max_temp_list)
     plt.plot(range(len(dates)),min_temp_list)
     plt.plot(range(len(dates)),avg_temp_list)
+    plt.ylabel("temp, deg C")
     plt.savefig(hist_avg_fig_name)
     plt.close()
         
@@ -103,6 +104,7 @@ while True:
     for n in sensors:
         sensor_hist_list.extend(sensor_hist[n])
         plt.plot(range(len(sensor_hist_list)), sensor_hist_list)
+        plt.ylabel("temp, deg C")
         sensor_hist_list = []
 
     plt.savefig(hist_all_fig_name)
@@ -130,11 +132,13 @@ while True:
             current_avg_ind[n] = sum(sum(tuple) for tuple in latest_data_ind)/len(latest_data_ind)
     
     # Create Nest fig
-    draw.text((0,0),str(current_avg),(255,255,255))
+    draw.text((110,80),str(int(current_avg))+" deg C",(255,255,255))
     img.save(current_avg_fig_name)
     
     # Print to Plot, Different Temps w/ Nest Avg
     plt.bar(sensors,current_avg_ind, color = 'blue')
+    plt.ylabel("temp, deg C")
+    plt.xticks(sensors,sensors)
     plt.savefig(current_ind_fig_name)
     
     #Move generated images to directory where the server reads it from
@@ -143,8 +147,3 @@ while True:
 
     # Wait for a bit before updating again
     sleep(update)
-            
-        
-            
-    
-
