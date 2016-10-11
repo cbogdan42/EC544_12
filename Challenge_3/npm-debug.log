@@ -1,0 +1,72 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/home/pi/.nvm/versions/node/v6.7.0/bin/node',
+1 verbose cli   '/home/pi/.nvm/versions/node/v6.7.0/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'connect' ]
+2 info using npm@3.10.3
+3 info using node@v6.7.0
+4 verbose config Skipping project config: /home/pi/.npmrc. (matches userconfig)
+5 silly loadCurrentTree Starting
+6 silly install loadCurrentTree
+7 silly install readLocalPackageData
+8 silly fetchPackageMetaData connect
+9 silly fetchNamedPackageData connect
+10 silly mapToRegistry name connect
+11 silly mapToRegistry using default registry
+12 silly mapToRegistry registry https://registry.npmjs.org/
+13 silly mapToRegistry data Result {
+13 silly mapToRegistry   raw: 'connect',
+13 silly mapToRegistry   scope: null,
+13 silly mapToRegistry   escapedName: 'connect',
+13 silly mapToRegistry   name: 'connect',
+13 silly mapToRegistry   rawSpec: '',
+13 silly mapToRegistry   spec: 'latest',
+13 silly mapToRegistry   type: 'tag' }
+14 silly mapToRegistry uri https://registry.npmjs.org/connect
+15 verbose request uri https://registry.npmjs.org/connect
+16 verbose request no auth needed
+17 info attempt registry request try #1 at 6:51:30 PM
+18 verbose request id b77b8f1405414fad
+19 http request GET https://registry.npmjs.org/connect
+20 info retry will retry, error on last attempt: Error: getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+21 info attempt registry request try #2 at 6:51:41 PM
+22 http request GET https://registry.npmjs.org/connect
+23 info retry will retry, error on last attempt: Error: getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+24 info attempt registry request try #3 at 6:52:41 PM
+25 http request GET https://registry.npmjs.org/connect
+26 silly fetchPackageMetaData Error: getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+26 silly fetchPackageMetaData     at errnoException (dns.js:28:10)
+26 silly fetchPackageMetaData     at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:76:26)
+26 silly fetchPackageMetaData  error for connect { Error: getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+26 silly fetchPackageMetaData     at errnoException (dns.js:28:10)
+26 silly fetchPackageMetaData     at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:76:26)
+26 silly fetchPackageMetaData   code: 'ENOTFOUND',
+26 silly fetchPackageMetaData   errno: 'ENOTFOUND',
+26 silly fetchPackageMetaData   syscall: 'getaddrinfo',
+26 silly fetchPackageMetaData   hostname: 'registry.npmjs.org',
+26 silly fetchPackageMetaData   host: 'registry.npmjs.org',
+26 silly fetchPackageMetaData   port: 443 }
+27 silly rollbackFailedOptional Starting
+28 silly rollbackFailedOptional Finishing
+29 silly runTopLevelLifecycles Starting
+30 silly runTopLevelLifecycles Finishing
+31 silly install printInstalled
+32 verbose stack Error: getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+32 verbose stack     at errnoException (dns.js:28:10)
+32 verbose stack     at GetAddrInfoReqWrap.onlookup [as oncomplete] (dns.js:76:26)
+33 verbose cwd /home/pi/Challenge_3
+34 error Linux 4.4.21-v7+
+35 error argv "/home/pi/.nvm/versions/node/v6.7.0/bin/node" "/home/pi/.nvm/versions/node/v6.7.0/bin/npm" "install" "connect"
+36 error node v6.7.0
+37 error npm  v3.10.3
+38 error code ENOTFOUND
+39 error errno ENOTFOUND
+40 error syscall getaddrinfo
+41 error network getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+42 error network This is most likely not a problem with npm itself
+42 error network and is related to network connectivity.
+42 error network In most cases you are behind a proxy or have bad network settings.
+42 error network
+42 error network If you are behind a proxy, please make sure that the
+42 error network 'proxy' config is set properly.  See: 'npm help config'
+43 verbose exit [ 1, true ]
