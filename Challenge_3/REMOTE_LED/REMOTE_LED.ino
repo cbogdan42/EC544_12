@@ -32,10 +32,10 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   if(XBee.available()){
-    Serial.print("Made it into loop");
-    
+    Serial.print("Made it in loop");    
     // Read in from XBee
     state = int(XBee.read())-48;
+    Serial.print(state);
     
     if(state == 0){
       digitalWrite(LED_1,0);
