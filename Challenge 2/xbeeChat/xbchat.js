@@ -4,7 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var fs = require("fs");
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('data_from_sensor.db');
+var db = new sqlite3.Database('../data_from_sensor.db');
 
 var str = '\0';										
 var acc = 0;
@@ -102,7 +102,7 @@ function compute_avg(msg, len, source)          //Calculate average based on the
   time = calculate_time();
   date = find_date();
   write_to_db(source,local_data,time,date)
-  string_to_write = source + '\t' + local_data + '\t' + time + '\t' + date + '\n'
+  string_to_write = source + '\t' + local_data.toFixed(2) + '\t' + time + '\t' + date + '\n'
   fs.appendFile(file_path, string_to_write, (err) => {
 	if (err) throw err;
   });
