@@ -41,13 +41,11 @@ void loop() {
       digitalWrite(LED_1,0);
       digitalWrite(LED_2,0);
       digitalWrite(LED_3,0);
-      delay(10);
       }
     else if(state == 1){
       digitalWrite(LED_1,1);
       digitalWrite(LED_2,1);
       digitalWrite(LED_3,1);
-      delay(10);
       }
     else if(state == 2){
       for(int n = 0; n < 5; n++){
@@ -71,9 +69,9 @@ void loop() {
       }
 
     // Send back Status
-    Serial.println(state);
-    XBee.print(state);
-
+      Serial.println(state);
+      XBee.println(state);
   }
-  
+  XBee.println(state);
+  delay(10);
   }

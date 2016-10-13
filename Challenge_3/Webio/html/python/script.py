@@ -25,6 +25,7 @@ def OFF():
     State = 0
     serial.writeString("0")
     print("Changed State to 0")
+    check = serial.readString()
 
 @webiopi.macro
 def ON():
@@ -33,6 +34,7 @@ def ON():
     State = 1
     serial.writeString("1")
     print ("Changed State to 1")
+    check = serial.readString()
 
 @webiopi.macro
 def RAVE():
@@ -41,10 +43,12 @@ def RAVE():
     State = 2
     serial.writeString("2")
     print ('Changed State to 2')
+    check = serial.readString()
 
 @webiopi.macro
 def Get_Value():
-    global read_value
-    print(read_value)
-    print("Got a Value from XBEE")
-    return "%d" %(read_value)
+    check = serial.readString()
+    html_str = '<html> <font color="white"> The Current State is' + check + ' </font></html>'
+    html_file = open("/home/pi/Challenge_3/Webio/html/python/state.html","w")
+    html_file.write(html_str)
+    html_file.close()
