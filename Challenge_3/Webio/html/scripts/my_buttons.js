@@ -1,9 +1,4 @@
 webiopi().ready(function() {
-    var STATE = function(macro, args, response) {
-                    var state = response.split("");
-                    // Following lines use jQuery functions
-                    console.log("state:"+state)
-        }
     webiopi().setFunction(17,"out");
 
     var content, button;
