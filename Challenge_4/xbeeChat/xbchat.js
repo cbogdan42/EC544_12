@@ -1,6 +1,3 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
 var fs = require("fs");
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('../data_from_sensor.db');
@@ -10,14 +7,14 @@ var particle = new Particle();
 
 var str = '\0';										
 var acc = 0;
-var avg = 0;
 var old = [];
 var timeout_val = 20000;                      //Timeout after 20s
-var data_time = [];
+var timeout_check_time = [];
+var source_table = []
 
 var file_path = '../data_server/public/files/file.txt';
 
-var num_sensors = 3;                      //Constant determining number of sensors in the system
+var num_sensors = 4;                      //Constant determining number of sensors in the system
 
 
 fs.writeFile(file_path, 'Sensor_id\tData_received\tTime\tDate', (err) => {
@@ -31,13 +28,19 @@ function init_array()                     //Function to initialize array to hold
   for(i=0;i<=num_sensors;i++)
   {
     old[i] = 0;
-    data_time[i] = 0;
+    timeout_check_time[i] = 0;
   }
+  source_table = find_device_id();
 }
 
-function get_values()
+function find_device_id()
 {
-  console.log("Hello")
+	var source = [];
+	source[0] = '12';
+	source[1] = '34';
+	source[2] = '56';
+	source[3] = '78';
+	return source;
 }
 
 function json_parse(variable_json)
@@ -58,7 +61,7 @@ function calculate_time(){								//Calculate the time periodically and return i
   return time;
 }
 
-function find_date(){                               
+function calculate_date(){                               
   var date_local = new Date();
   var date;
   var month = date_local.getMonth() + 1 
@@ -70,65 +73,58 @@ function find_date(){
 }
 
 
-function print_avg()                      //Print average value of temperature
+function print_avg(avg)                      //Print average value of temperature
 {
   console.log("average computed = %dºC", avg.toFixed(2));
 }
 
-function check_source(msg)                //Check source of message
+function check_source(device_id, msg)                //Check source of message
 {
+  
   var source;
   var i;
   var len;
 
   //Find source of message
-  len = msg.length;
-  source =  msg.charCodeAt(0);
-  source = source-49;  
-
+  //len = msg.length; 
+  for(i=0;i<source_table.length;i++)
+  {
+  	if(device_id == source_table[i])
+  		source = i;
+  }
+  
   //Record time of receiving message
-  data_time[source] = Date.now();
+  timeout_check_time[source] = Date.now();
 
   //Call function to calculate average
-  compute_avg(msg,len,source);
+  compute_avg(msg,source);
 } 
 
 
-function compute_avg(msg, len, source)          //Calculate average based on the lastes 4 values from 'old' array
+function compute_avg(msg, source)          //Calculate average based on the lastes 4 values from 'old' array
 {
-  var num;
-  var whole_num;
-  var decimal_part;
-  var local_data = 0;
-  var str;
-  var i;
   var time;
-  var data;
+  var date;
+  var avg = 0;
   var string_to_write = '\0'
-  //Convert string to number
-  num = msg.slice(1,len-1);
-  str = num.split(".");
-  whole_num = str[0];
-  decimal_part = str[1];
-  local_data = (whole_num.charCodeAt(0)-48)*10 + whole_num.charCodeAt(1)-48 + (decimal_part.charCodeAt(0)-48)/10 + (decimal_part.charCodeAt(1)-48)/100;				//Float value containing sensor data
-
+  
   //Write to db
   time = calculate_time();
-  date = find_date();
-  write_to_db(source,local_data,time,date)
-  string_to_write = source + '\t' + local_data.toFixed(2) + '\t' + time + '\t' + date + '\n'
+  date = calculate_date();
+  write_to_db(source,msg,time,date)
+  string_to_write = source + '\t' + msg.toFixed(2) + '\t' + time + '\t' + date + '\n'
   fs.appendFile(file_path, string_to_write, (err) => {
 	if (err) throw err;
   });
 
   //Calculate average based on input data
-  acc = acc + local_data; 
+  acc = acc + msg; 
   
   //Shift array containing latest 4 values to accomodate new value
-  shift_array(old,local_data);
+  shift_array(old,msg);
   acc = acc-old[0];
   avg = acc/num_sensors;
-  print_avg();
+  print_avg(avg);
 
 }
 
@@ -137,7 +133,7 @@ function check_for_timeout()              //Check which sensors haven't responde
   var i;
   for(i=0;i<num_sensors;i++)
   {
-    if(Date.now()-data_time[i]>timeout_val)
+    if(Date.now()-timeout_check_time[i]>timeout_val)
       console.log("Sensor %d hasn't responded for more than 20 seconds",i+1);
   } 
 }
@@ -179,11 +175,8 @@ function retrieve(device_id)       //Replace by particle_variable
       var devicesPr = particle.listDevices({ auth: data.body.access_token });
       devicesPr.then(
         function(devices){
-          //console.log(devices.body);
           var parsed_val = json_parse(devices.body);
-          var date = find_date();
-          var time = calculate_time();
-          console.log(device_id);
+          check_source(device_id, parsed_val);           //If getting value from one photon, do string parsing here
         },
         function(err) {
           console.log('List devices call failed: ', err);
@@ -196,16 +189,11 @@ function retrieve(device_id)       //Replace by particle_variable
   );
 }
 
-
 //Initialize array to hold latest values from sensors
 init_array();
 
 //Check if any sensors have timed out
-//setInterval(check_for_timeout,10000);     
+setInterval(check_for_timeout,5000);     
 
 //setInterval(retrieve,2000);     //Call get_values here itself
-
-setInterval(function(){retrieve(111)}, 1000);
-setInterval(function(){retrieve(222)}, 1000);
-setInterval(function(){retrieve(333)}, 1000);
-setInterval(function(){retrieve(444)}, 1000);
+setInterval(function(){retrieve(12)}, 1000);
