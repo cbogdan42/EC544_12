@@ -33,7 +33,7 @@ function init_array()                     //Function to initialize array to hold
   source_table = find_device_id();
 }
 
-function find_device_id()
+function find_device_id()           //Store device ids here
 {
 	var source = [];
 	source[0] = '12';
@@ -45,8 +45,10 @@ function find_device_id()
 
 function json_parse(variable_json)
 {
+  //var val_char = "10.5";
+  //var val = parseFloat(val_char);
+  //console.log(typeof val);
   var val = 10;
-  //console.log(variable_json);
   return val;
 }
 
