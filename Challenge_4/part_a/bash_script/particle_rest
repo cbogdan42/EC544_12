@@ -1,0 +1,9 @@
+#!/bin/bash
+while true
+do
+	curl -s https://api.particle.io/v1/devices/Group12_device1/sum?access_token=c61201bb021acad57dbecf0a05496376cd7623e5>P1.txt
+	curl -s https://api.particle.io/v1/devices/Group12_device2/sum?access_token=c61201bb021acad57dbecf0a05496376cd7623e5>P2.txt
+	curl -s https://api.particle.io/v1/devices/Group12_device3/sum?access_token=c61201bb021acad57dbecf0a05496376cd7623e5>P3.txt
+	curl -s https://api.particle.io/v1/devices/Group12_device4/sum?access_token=c61201bb021acad57dbecf0a05496376cd7623e5>P4.txt
+	sleep 1
+done

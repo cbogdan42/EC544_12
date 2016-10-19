@@ -5,61 +5,54 @@ var Particle = require('particle-api-js');
 var particle = new Particle();
 
 
-var str = '\0';										
+var str = '\0';                   
 var acc = 0;
 var old = [];
 var timeout_val = 20000;                      //Timeout after 20s
 var timeout_check_time = [];
-var source_table = []
+var source_table = ['260039000a47353235303037','1e0034001647353236343033'];
 
 var file_path = '../data_server/public/files/file.txt';
+var json_path = 'out.txt';
+var device_list_path = 'device_list.txt';
+var variable_file_path = '../bash_script/'
+var variable_file_name = ['P1.txt','P2.txt','P3.txt','P4.txt'];
+var photon_val = [];
+
 
 var num_sensors = 4;                      //Constant determining number of sensors in the system
 
-
 fs.writeFile(file_path, 'Sensor_id\tData_received\tTime\tDate', (err) => {
-	if (err) throw err;
+  if (err) throw err;
 });
 
 
-function init_array()                     //Function to initialize array to hold latest values from sensors
+function init()                     //Function to initialize array to hold latest values from sensors
 { 
   var i;
   for(i=0;i<=num_sensors;i++)
   {
+    photon_val[i] = 0;
     old[i] = 0;
     timeout_check_time[i] = 0;
   }
-  source_table = find_device_id();
 }
 
-function find_device_id()           //Store device ids here
-{
-	var source = [];
-	source[0] = '12';
-	source[1] = '34';
-	source[2] = '56';
-	source[3] = '78';
-	return source;
-}
 
 function json_parse(variable_json)
 {
-  //var val_char = "10.5";
-  //var val = parseFloat(val_char);
-  //console.log(typeof val);
   var val = 10;
   return val;
 }
 
-function calculate_time(){								//Calculate the time periodically and return it
+function calculate_time(){                //Calculate the time periodically and return it
   var date_local = new Date();
   var hour = date_local.getHours();
   var time;
   var minutes = date_local.getMinutes();
   var seconds = date_local.getSeconds();
   time = ''
-  time = hour + ':' + minutes + ':' + seconds;
+  time = hour.toString() + minutes.toString() + seconds.toString();
   return time;
 }
 
@@ -70,7 +63,7 @@ function calculate_date(){
   var day = date_local.getDate() 
   var year = date_local.getFullYear() 
   date = ''
-  date = month + '/' + day + '/' + year
+  date = year.toString() + month.toString() + day.toString();
   return date;
 }
 
@@ -87,12 +80,10 @@ function check_source(device_id, msg)                //Check source of message
   var i;
   var len;
 
-  //Find source of message
-  //len = msg.length; 
   for(i=0;i<source_table.length;i++)
   {
-  	if(device_id == source_table[i])
-  		source = i;
+    if(device_id == source_table[i])
+      source = i;
   }
   
   //Record time of receiving message
@@ -116,7 +107,7 @@ function compute_avg(msg, source)          //Calculate average based on the last
   write_to_db(source,msg,time,date)
   string_to_write = source + '\t' + msg.toFixed(2) + '\t' + time + '\t' + date + '\n'
   fs.appendFile(file_path, string_to_write, (err) => {
-	if (err) throw err;
+  if (err) throw err;
   });
 
   //Calculate average based on input data
@@ -170,32 +161,23 @@ function write_to_db(source, value, time, date){
 
 function retrieve(device_id)       //Replace by particle_variable
 {
-  particle.login({username: 'aravinds@bu.edu', password: 'ec544group12'}).then(
-    function(data){
-      //console.log(device_id);
-      //console.log('API call completed on promise resolve: ', data.body.access_token);
-      var devicesPr = particle.listDevices({ auth: data.body.access_token });
-      devicesPr.then(
-        function(devices){
-          var parsed_val = json_parse(devices.body);
-          check_source(device_id, parsed_val);           //If getting value from one photon, do string parsing here
-        },
-        function(err) {
-          console.log('List devices call failed: ', err);
-        }
-      );
-    },
-    function(err) {
-      console.log('API call completed on promise fail: ', err);
-    }
-  );
+
+  fs.readFile(variable_file_path+variable_file_name[device_id], 'utf8', function(err, contents) {
+    var str = JSON.parse(contents);
+    photon_val[device_id] = parseInt(str.result,10);
+    compute_avg(photon_val[device_id],device_id);
+  });
 }
 
+
 //Initialize array to hold latest values from sensors
-init_array();
+init();
 
 //Check if any sensors have timed out
-setInterval(check_for_timeout,5000);     
+//setInterval(check_for_timeout,5000);     
 
 //setInterval(retrieve,2000);     //Call get_values here itself
-setInterval(function(){retrieve(12)}, 1000);
+setInterval(function(){retrieve(0)}, 1500);
+setInterval(function(){retrieve(1)}, 1500);
+setInterval(function(){retrieve(2)}, 1500);
+setInterval(function(){retrieve(3)}, 1500);

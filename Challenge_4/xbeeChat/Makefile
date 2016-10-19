@@ -1,2 +1,0 @@
-all:
-	node xbchat.js
