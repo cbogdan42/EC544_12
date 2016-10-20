@@ -10,7 +10,8 @@ var acc = 0;
 var old = [];
 var timeout_val = 20000;                      //Timeout after 20s
 var timeout_check_time = [];
-var source_table = ['260039000a47353235303037','1e0034001647353236343033'];
+var avg = 0;
+
 
 var file_path = '../data_server/public/files/file.txt';
 var json_path = 'out.txt';
@@ -98,7 +99,6 @@ function compute_avg(msg, source)          //Calculate average based on the last
 {
   var time;
   var date;
-  var avg = 0;
   var string_to_write = '\0'
   
   //Write to db
@@ -111,14 +111,12 @@ function compute_avg(msg, source)          //Calculate average based on the last
   });
 
   //Calculate average based on input data
-  acc = acc + msg; 
+  acc = acc + msg;
   
   //Shift array containing latest 4 values to accomodate new value
   shift_array(old,msg);
   acc = acc-old[0];
   avg = acc/num_sensors;
-  print_avg(avg);
-
 }
 
 function check_for_timeout()              //Check which sensors haven't responded for more than 20s
@@ -162,9 +160,9 @@ function write_to_db(source, value, time, date){
 function retrieve(device_id)       //Replace by particle_variable
 {
 
-  fs.readFile(variable_file_path+variable_file_name[device_id], 'utf8', function(err, contents) {
+  fs.readFile(variable_file_name[device_id], 'utf8', function(err, contents) {
     var str = JSON.parse(contents);
-    photon_val[device_id] = parseInt(str.result,10);
+    photon_val[device_id] = parseFloat(str.result,10);
     compute_avg(photon_val[device_id],device_id);
   });
 }
@@ -179,5 +177,7 @@ init();
 //setInterval(retrieve,2000);     //Call get_values here itself
 setInterval(function(){retrieve(0)}, 1500);
 setInterval(function(){retrieve(1)}, 1500);
-setInterval(function(){retrieve(2)}, 1500);
-setInterval(function(){retrieve(3)}, 1500);
+setInterval(function(){print_avg(avg)}, 2000);
+
+//setInterval(function(){retrieve(2)}, 1500);
+//setInterval(function(){retrieve(3)}, 1500);
