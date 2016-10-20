@@ -21,7 +21,7 @@ var variable_file_name = ['P1.txt','P2.txt','P3.txt','P4.txt'];
 var photon_val = [];
 
 
-var num_sensors = 2;                      //Constant determining number of sensors in the system
+var num_sensors = 3;                      //Constant determining number of sensors in the system
 
 fs.writeFile(file_path, 'Sensor_id\tData_received\tTime\tDate', (err) => {
   if (err) throw err;
@@ -177,6 +177,7 @@ init();
 //setInterval(retrieve,2000);     //Call get_values here itself
 setInterval(function(){retrieve(0)}, 1500);
 setInterval(function(){retrieve(1)}, 1500);
+setInterval(function(){retrieve(2)}, 1500);
 setInterval(function(){print_avg(avg)}, 2000);
 
 //setInterval(function(){retrieve(2)}, 1500);

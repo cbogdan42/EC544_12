@@ -3,8 +3,10 @@ while true
 do
 	curl -s https://api.particle.io/v1/devices/Group12_device1/sum?access_token=9750cacb3c90173295d6b231afe27e49b8aa1bb2 1>../bash_script/P1.txt
 	curl -s https://api.particle.io/v1/devices/Group12_device2/sum?access_token=9750cacb3c90173295d6b231afe27e49b8aa1bb2 1>../bash_script/P2.txt
+	curl -s https://api.particle.io/v1/devices/Group12_device5/sum?access_token=9750cacb3c90173295d6b231afe27e49b8aa1bb2 1>../bash_script/P3.txt
 	cp ../bash_script/P1.txt .
 	cp ../bash_script/P2.txt .
+	cp ../bash_script/P3.txt .
 	#curl -s https://api.particle.io/v1/devices/Group12_device1/sum?access_token=9750cacb3c90173295d6b231afe27e49b8aa1bb2 1>../bash_script/P1.txt
 	#curl -s https://api.particle.io/v1/devices/Group12_device2/sum?access_token=9750cacb3c90173295d6b231afe27e49b8aa1bb2 1>../bash_script/P2.txt
 	#cp ../bash_script/P1.txt .
