@@ -1,4 +1,4 @@
 all:
 	node xbchat.js &
-	../python_periodic.py &
+	../bash_script/periodic_transfer &
 	../bash_script/particle_rest &

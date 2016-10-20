@@ -1,0 +1,8 @@
+#!/bin/bash
+while true
+do
+	cp ../data_from_sensor.db .
+	sshpass -p 'raspberry' scp ../data_from_sensor.db pi@192.168.1.147:~/git/EC544_12/Challenge_4/part_b/
+	sshpass -p 'raspberry' scp ../data_server/public/files/file.txt pi@192.168.1.147:~/git/EC544_12/Challenge_4/part_b/data_server/public/files/
+	sleep 1
+done
