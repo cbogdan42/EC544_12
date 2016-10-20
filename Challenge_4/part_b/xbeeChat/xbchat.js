@@ -21,7 +21,7 @@ var variable_file_name = ['P1.txt','P2.txt','P3.txt','P4.txt'];
 var photon_val = [];
 
 
-var num_sensors = 4;                      //Constant determining number of sensors in the system
+var num_sensors = 2;                      //Constant determining number of sensors in the system
 
 fs.writeFile(file_path, 'Sensor_id\tData_received\tTime\tDate', (err) => {
   if (err) throw err;
