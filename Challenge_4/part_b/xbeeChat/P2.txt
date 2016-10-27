@@ -1,0 +1,13 @@
+{
+  "cmd": "VarReturn",
+  "name": "sum",
+  "result": 23.6973819732666,
+  "coreInfo": {
+    "last_app": "",
+    "last_heard": "2016-10-20T19:15:05.264Z",
+    "connected": true,
+    "last_handshake_at": "2016-10-20T18:13:56.890Z",
+    "deviceID": "200023001547353236343033",
+    "product_id": 6
+  }
+}
