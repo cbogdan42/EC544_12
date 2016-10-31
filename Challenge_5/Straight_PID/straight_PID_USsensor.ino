@@ -1,4 +1,5 @@
 #include <I2C.h>
+//#include <TimerOne.h>
 
 //Setup Servos
 #include <Servo.h>
@@ -9,9 +10,11 @@ bool startup = true; // used to ensure startup only happens once
 int startupDelay = 1000; // time to pause at each calibration step
 double maxSpeedOffset = 45; // maximum speed magnitude, in servo 'degrees'
 double maxWheelOffset = 85; // maximum wheel turn magnitude, in servo 'degrees'
-int Ki = 0;
-int Kp = 1;
-int Kd = .1;
+float Ki = 0;
+float Kp = 1;
+float Kp_s = .000000001;
+float Kd_s = .00003;
+float Kd = .1;
 float integral = 0;
 float setpoint = 80;
 float process_feedback = 0;
@@ -41,6 +44,8 @@ void setup()
   I2c.begin(); // Opens & joins the irc bus as master
   delay(100); // Waits to make sure everything is powered up before sending or receiving data  
   I2c.timeOut(50); // Sets a timeout to ensure no locking up of sketch if I2C communication fails
+  Timer1.initialize(TIMER_US);                  // Initialise timer 1
+  Timer1.attachInterrupt( timerIsr );
 }
 
 /* Convert degree value to radians */
@@ -80,24 +85,31 @@ void oscillate(){
 
 void PID(){
   delay(dt);
+  
   pinMode(pwPin1, INPUT);
   pinMode(pwPin2, INPUT);
 
-  int distance1 = pulseIn(pwPin1, HIGH);
-  int distance2 = pulseIn(pwPin2, HIGH); 
-  Serial.print("From sensor 1:");
-  Serial.println(distance1);
-  Serial.print("From sensor 2:");
-  Serial.println(distance2);
+  float distance1 = pulseIn(pwPin1, HIGH);
+  float distance2 = pulseIn(pwPin2, HIGH); 
+  //Serial.print("From sensor 1:");
+  //Serial.println(distance1);
+  //Serial.print("From sensor 2:");
+  //Serial.println(distance2);
   error = distance2 - distance1;
   integral = integral + (error*dt);
   derivative = (error-previous_error)/dt;
   output = (Kp*error) + (Ki*integral) + (Kd*derivative);
   previous_error = error;
-  esc.write(90 + output);
-  wheels.write(20);
-  Serial.println(output);
+  esc.write(90 +output);
+  float output_s = abs(error)*Kp_s + Ki*abs(error) + Kd_s*abs(error);
+  wheels.write(90-(90/output_s));
+  Serial.println(90-(90/output_s));
   
+}
+
+void timerIsr()
+{
+//Timer ISR called here at each interrupt
 }
 
 void loop()
