@@ -1,3 +1,6 @@
+#include <I2C.h>
+//#include <TimerOne.h>
+
 //Setup Servos
 #include <Servo.h>
  
@@ -7,26 +10,24 @@ bool startup = true; // used to ensure startup only happens once
 int startupDelay = 1000; // time to pause at each calibration step
 double maxSpeedOffset = 45; // maximum speed magnitude, in servo 'degrees'
 double maxWheelOffset = 85; // maximum wheel turn magnitude, in servo 'degrees'
-int Ki = .001;
-int Kp = 1.5;
-int Kd = 10;
+float Ki = 0;
+float Kp = 1;
+float Kp_s = .000000001;
+float Kd_s = .00003;
+float Kd = .1;
 float integral = 0;
 float setpoint = 80;
 float process_feedback = 0;
-int dt = 200;
+int dt = 100;
 float previous_error = 0;
 float lidar = 90;
 float error = 0;
 float derivative = 0;
 float output= 0;
+const int pwPin1 = 7;
+const int pwPin2 = 5;
+long pulse1, inches1, cm1,pulse2, inches2, cm2;
 
-
-//Setup Lidar
-#include <I2C.h>
-#define    LIDARLite_ADDRESS   0x62          // Default I2C Address of LIDAR-Lite.
-#define    RegisterMeasure     0x00          // Register to write to initiate ranging.
-#define    MeasureValue        0x04          // Value to initiate ranging.
-#define    RegisterHighLowB    0x8f          // Register to get both High and Low bytes in 1 call.
 
 void setup()
 {
@@ -43,6 +44,8 @@ void setup()
   I2c.begin(); // Opens & joins the irc bus as master
   delay(100); // Waits to make sure everything is powered up before sending or receiving data  
   I2c.timeOut(50); // Sets a timeout to ensure no locking up of sketch if I2C communication fails
+  Timer1.initialize(TIMER_US);                  // Initialise timer 1
+  Timer1.attachInterrupt( timerIsr );
 }
 
 /* Convert degree value to radians */
@@ -83,36 +86,33 @@ void oscillate(){
 void PID(){
   delay(dt);
   
-  // Write 0x04 to register 0x00
-  uint8_t nackack = 100; // Setup variable to hold ACK/NACK resopnses     
-  while (nackack != 0){ // While NACK keep going (i.e. continue polling until sucess message (ACK) is received )
-    nackack = I2c.write(LIDARLite_ADDRESS,RegisterMeasure, MeasureValue); // Write 0x04 to 0x00
-    delay(1); // Wait 1 ms to prevent overpolling
-  }
+  pinMode(pwPin1, INPUT);
+  pinMode(pwPin2, INPUT);
 
-  byte distanceArray[2]; // array to store distance bytes from read function
-  
-  // Read 2byte distance from register 0x8f
-  nackack = 100; // Setup variable to hold ACK/NACK resopnses     
-  while (nackack != 0){ // While NACK keep going (i.e. continue polling until sucess message (ACK) is received )
-    nackack = I2c.read(LIDARLite_ADDRESS,RegisterHighLowB, 2, distanceArray); // Read 2 Bytes from LIDAR-Lite Address and store in array
-    delay(1); // Wait 1 ms to prevent overpolling
-  }
-  int distance = (distanceArray[0] << 8) + distanceArray[1];  // Shift high byte [0] 8 to the left and add low byte [1] to create 16-bit int
-  Serial.println(distance);
-  error = setpoint-distance;
+  float distance1 = pulseIn(pwPin1, HIGH);
+  float distance2 = pulseIn(pwPin2, HIGH); 
+  //Serial.print("From sensor 1:");
+  //Serial.println(distance1);
+  //Serial.print("From sensor 2:");
+  //Serial.println(distance2);
+  error = distance2 - distance1;
   integral = integral + (error*dt);
   derivative = (error-previous_error)/dt;
   output = (Kp*error) + (Ki*integral) + (Kd*derivative);
   previous_error = error;
-  wheels.write(90 + output);
-  Serial.println(output);
+  esc.write(90 +output);
+  float output_s = abs(error)*Kp_s + Ki*abs(error) + Kd_s*abs(error);
+  wheels.write(90-(90/output_s));
+  Serial.println(90-(90/output_s));
   
+}
+
+void timerIsr()
+{
+//Timer ISR called here at each interrupt
 }
 
 void loop()
 {
    PID();
 }
-
-
