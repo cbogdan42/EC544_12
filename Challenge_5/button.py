@@ -14,7 +14,7 @@ xbee = serial.Serial('/dev/ttyUSB0',9600)
  
 pygame.init()
  
-display_width = 800
+display_width = 1000
 display_height = 600
  
 black = (0,0,0)
