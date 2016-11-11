@@ -124,7 +124,7 @@ def GetDistance(self):
    
     # Convert RSSI values to distances
     for n in beacon_vals:
-        distance_vals.append(1/n)
+        distance_vals.append(.99/(1-n/70))
         
     Mat_1 = np.matrix([Beacons(list_beacons(1))[1]-Beacons(list_beacons(2))[1], \\
                        [Beacons(list_beacons(1))[2]-Beacons(list_beacons(3))[2]],\\
@@ -214,6 +214,7 @@ while True:
     # Draw Dot
     pygame.draw.circle(screen,black,Current_Position,3,0)
     pygame.display.flip()
+    pygame.image.save(screen,'img.jpg')
     sleep(.1)
 
 pygame.quit()
