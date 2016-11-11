@@ -16,6 +16,7 @@ var portName = process.argv[2];
 var sampleDelay = 1000;
 
 var file_path = 'RSSI_data.txt';
+var second_file_path = 'data_rssi.txt';
 
 function write_to_file()
 {
@@ -77,11 +78,15 @@ XBeeAPI.on("frame_object", function(frame) {
   	if(count == 4)
   	{
   		count = 0;
-  		var string_to_write = rssi[0] +  '\t' + rssi[1] +  '\t' + rssi[2] +  '\t' + rssi[3];
-	    console.log(string_to_write);
+  		var string_to_write = rssi[0] +  ',' + rssi[1] +  ',' + rssi[2] +  ',' + rssi[3];
+	    var second_string = rssi[0] +  '\t' + rssi[1] +  '\t' + rssi[2] +  '\t' + rssi[3];
+	    console.log(second_string);
 	    fs.writeFile(file_path, string_to_write, (err) => {
 	      if (err) throw err;
 	    });
+      fs.writeFile(second_file_path, second_string, (err) => {
+        if (err) throw err;
+      });
   	}
   }
 });
