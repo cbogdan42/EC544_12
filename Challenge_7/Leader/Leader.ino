@@ -76,6 +76,9 @@ while(Network_Discovered ==0){
         delay(10);
         }
     num_loops = num_loops++;
+    if (num_loops > 10){
+      Network_Discovered = 1;
+    }
     }
   
   }
