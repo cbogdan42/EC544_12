@@ -4,7 +4,7 @@ int leader_ID=0;
 int num_election = 0;
 int temp,next;
 
-void loop() {
+void loop(){
   // put your main code here, to run repeatedly:
   electionStart = in_message.substring(5,6);
   next = 4;
