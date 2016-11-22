@@ -115,7 +115,7 @@ void loop()
     if (num_loops > 10)
     {
       Network_Discovered = 1;
-      electionStart = 1;
+      electionStart = 1; //Sets electionStart = 1 immediately after network discovery done
       Max_UID = network_UIDs[0].toInt();
       Min_UID = network_UIDs[0].toInt();
       for(i=0;i<int(sizeof(network_UIDs));i++)
@@ -129,11 +129,11 @@ void loop()
   }
 
   if(in_message.substring(1,2).toInt() == Uid){
-    if(electionStart == 0)
-      electionStart = in_message.substring(5,6).toInt();
-  }
+    if(electionStart == 0) //If node hasn't started election, it is told to set electionStart = 1
+      electionStart = in_message.substring(5,6).toInt(); 
+  }//will all nodes do network discovery at the same time?
   next = 4;
-  for(int i = 0; i < int(sizeof(network_UIDs)); i++)  //Sends message to next node in list
+  for(int i = 0; i < int(sizeof(network_UIDs)); i++)  //Sends message to next highest node ID in list
   { 
   if(network_UIDs[i].toInt() > Uid)
   {
@@ -142,14 +142,15 @@ void loop()
     }
   }
   if(next == 4)
-  { //UID is the max of the network_UIDs
+  { //UID is the max of the network_UIDs, then sends to lowest ID in network list
     next = Min_UID;    
   }
   to_UID = next;
 
-  if(electionStart == 1)
+  if(electionStart == 1) 
   {
-  if (num_election == 0)
+  if (num_election == 0)//Count for number of election messages during one election cycle, might have some confusion about 
+                        //numbering being 1,2 whereas I've used 0,1
   {
     out_message = str_UID + String(to_UID) + String(my_leader_status) + String(my_infection) + String(electionStart) + String(Network_Discovered) + String(leader_ID);
     XBee.println(out_message);
@@ -165,12 +166,12 @@ void loop()
     }
     else if(leader_ID != in_message.substring(7,8).toInt()) //If not, then check if nodes agree on who the leader is
     { 
-      Network_Discovered = 0;      
+      Network_Discovered = 0;  //Start network discovery
     }      
     out_message = str_UID + String(to_UID) + String(my_leader_status) + String(my_infection) + String(electionStart) + String(Network_Discovered) + String(leader_ID);
     XBee.println(out_message);
     num_election = 0; 
-    electionStart = 0;
+    electionStart = 0; //If leader decided, end election
     }
   }
 
