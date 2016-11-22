@@ -17,7 +17,7 @@ void loop() {
   if(next == 4){ //UID is the max of the network_UIDs
     next = Min_UID;    
   }
-  to_UID = next;
+  to_UID = next; //Broadcast won't happen after this
   
   if(electionStart == 1){
     if (num_election == 0){
