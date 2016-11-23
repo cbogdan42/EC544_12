@@ -209,49 +209,115 @@ void NetworkDiscovery(){
     else{
       election_pass = max(networkUIDs);
     }
-
-    
   
 }
 // Election Routine
 void Election(){
-
+  // Set All LEDs High to show that an Election is occurring
+  digitalWrite(BLUE_LED, HIGH);
+  digitalWrite(GREEN_LED, HIGH);
+  digitalWrite(RED_LED,HIGH);
+  
+  // Determine Leader - min UID in network library
+  proposed_leader = min(networkUIDs);
+  
   // Round 1 - pass along message to next after receiving message from previous 
   if(election_initiator){
+    // If you started the election, just start broadcasting election
+    election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+    XBee.write(election_message);
+  }
+  else{
+    // If you didn't start the election, wait for a message from your previous node
+    int previousreceived = 0;
+    while(previousreceived == 0){
+      election_packet = read_packet();
+      //check its an election packet
+      if(election_packet.substring(0,1) == ElectionInt){
+        // check its from the previous
+        if(election_packet.substring(1,2) == election_previous){
+          // Set previous_received and pass along message
+          previousreceived = 1;
+          election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+        }
+      }
+      
+    }
+  }
 
-  for(int i = 0; i < int(sizeof(network_UIDs)); i++){ //Sends message to next node in list
-    if(network_UIDs[i] > UID){
-      temp = network_UIDs[i];
-      next = min(next,temp);
+  // Round 2 - process proposed leader
+  if(election_initiator){
+    // Wait for previous round to conclude
+    int previousreceived = 0;
+    while(previousreceived == 0){
+      election_packet = read_packet();
+      //check its an election packet
+      if(election_packet.substring(0,1) == ElectionInt){
+        // check its from the previous
+        if(election_packet.substring(1,2) == election_previous){
+          // Set previous_received and pass along message with proposed leader
+          previousreceived = 1;
+          election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+        }
+      }
+    // If you started the election, just start broadcasting election
+    election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+    XBee.write(election_message);
+
+    // Wait for second round to conclude
+    int previousreceived = 0;
+    int electionconcluded = 0;
+    
+    while(previousreceived == 0){
+      election_packet = read_packet();
+      //check its an election packet
+      if(election_packet.substring(0,1) == ElectionInt){
+        // check its from the previous
+        if(election_packet.substring(1,2) == election_previous){
+          // Read in network proposed leader
+          network_proposed = election_packet.substring(3,4);
+          if(network_proposed == proposed_leader){
+            electionconcluded =1;
+            if(proposed_leader == UID){
+              leader_current_node = 1;
+            }
+          }
+        }
       }
   }
-  if(next == 4){ //UID is the max of the network_UIDs
-    next = Min_UID;    
-  }
-  to_UID = next; //Broadcast won't happen after this
-  
-  if(electionStart == 1){
-    if (num_election == 0){
-      out_message = str_UID + String(to_UID) + String(my_leader_status) + String(my_infection) + String(electionStart) + String(Network_Discovered) + String(leader_ID);
-      Xbee.println(out_message);
-      num_election++;
-      }
-    else if (num_election == 1){
-      leader_ID = Min_ID;
-      if(UID == Min_UID){  //Check if it is first node in ring, and set itself to leader
-        leader_ID = Min_UID;
-        my_leader_status = 1;
-      }
-      else if(leader_ID != in_message.substring(7,8)){ //If not, then check if nodes agree on who the leader is
-        Network_Discovered = 1;      
-      }      
-      out_message = str_UID + String(to_UID) + String(my_leader_status) + String(my_infection) + String(electionStart) + String(Network_Discovered) + String(leader_ID);
-      Xbee.println(out_message);
-      num_election = 0; 
-      electionStart = 0;
+  else{
+    // If you didn't start the election, wait for a message from your previous node then compare
+    int previousreceived = 0;
+    int electionconcluded = 0;
+    
+    while(previousreceived == 0){
+      election_packet = read_packet();
+      //check its an election packet
+      if(election_packet.substring(0,1) == ElectionInt){
+        // check its from the previous
+        if(election_packet.substring(1,2) == election_previous){
+          // Read in network proposed leader
+          network_proposed = election_packet.substring(3,4);
+          if(network_proposed == proposed_leader){
+            electionconcluded =1;
+            if(proposed_leader == UID){
+              leader_current_node = 1;
+            }
+          }
+        }
       }
     }
-}
+  }
+
+  if (electionconcluded == 0){
+    Network_Discovery();
+  }
+  else{
+  digitalWrite(BLUE_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(RED_LED, LOW);
+  }
+
 }
 
 void setup() 
