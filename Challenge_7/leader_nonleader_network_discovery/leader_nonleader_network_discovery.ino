@@ -49,6 +49,9 @@ int leaderPingCNT = 0;            // Leader Pings Network every leaderPingThresh
 int leaderPingThreashold = 10;    // Number of loops through leader code before pinging network
 int Network_Discovered = 0;       // Starts Network Discovery assuming we don't yet know the network
 int Network_Count = 0;            // Number of nodes in the network
+int network_UIDS = [];            // Array of Network IDs
+int election_pass;                // Node to pass to in an election
+int election_receive;             // Node to receive from for election
 
 /// Infection Variables
 int infected = 0;                 // node is infected if this value is 1
@@ -170,10 +173,85 @@ void NetworkDiscovery(){
       Network_Discovered = 1;
     }
   }
+
+  // Identify passing partners for election - pass is node messages go to, previous is messages come from
+    int previous_found = 0;
+    int temp_pass = min(networkUIDs);
+    int previous_found = 0;
+    int temp_previous = max(networkUIDs);
+    
+    for(int i = 0; i > Network_Count; i++){
+      int check = networkUIDs[n];
+      // Check for pass
+      if(check>myUID){
+        if(check<=temp_pass){
+          temp_pass = check;
+          pass_found = 1;
+        }
+      }
+      // Check for previous
+      if(check<myUID){
+        if(check >=){
+          temp_previous = check;
+          previous_found = 1;
+        }
+      }
+    }
+    if(pass_found){
+      election_pass = temp_pass;
+    }
+    else{
+      election_pass = min(networkUIDs);
+    }
+    if(previous_found){
+      election_previous = temp_previous;
+    }
+    else{
+      election_pass = max(networkUIDs);
+    }
+
+    
+  
 }
 // Election Routine
 void Election(){
+
+  // Round 1 - pass along message to next after receiving message from previous 
+  if(election_initiator){
+
+  for(int i = 0; i < int(sizeof(network_UIDs)); i++){ //Sends message to next node in list
+    if(network_UIDs[i] > UID){
+      temp = network_UIDs[i];
+      next = min(next,temp);
+      }
+  }
+  if(next == 4){ //UID is the max of the network_UIDs
+    next = Min_UID;    
+  }
+  to_UID = next; //Broadcast won't happen after this
   
+  if(electionStart == 1){
+    if (num_election == 0){
+      out_message = str_UID + String(to_UID) + String(my_leader_status) + String(my_infection) + String(electionStart) + String(Network_Discovered) + String(leader_ID);
+      Xbee.println(out_message);
+      num_election++;
+      }
+    else if (num_election == 1){
+      leader_ID = Min_ID;
+      if(UID == Min_UID){  //Check if it is first node in ring, and set itself to leader
+        leader_ID = Min_UID;
+        my_leader_status = 1;
+      }
+      else if(leader_ID != in_message.substring(7,8)){ //If not, then check if nodes agree on who the leader is
+        Network_Discovered = 1;      
+      }      
+      out_message = str_UID + String(to_UID) + String(my_leader_status) + String(my_infection) + String(electionStart) + String(Network_Discovered) + String(leader_ID);
+      Xbee.println(out_message);
+      num_election = 0; 
+      electionStart = 0;
+      }
+    }
+}
 }
 
 void setup() 
@@ -221,6 +299,7 @@ void loop()
 
     // Has the Leader gone silent?
     if (leader_time > leader_threshold){
+      election_initiator = 1;
       Election();
     }
 
@@ -232,6 +311,7 @@ void loop()
       leader_time = 0;
     }
     else if (int_rx == ElectionInt){
+      election_initiator = 0;
       Election();                  
     }
     else if (int_rx == NetworkDiscoveryInt){
@@ -296,6 +376,7 @@ void loop()
       leaderPingCNT = 0;
     }
     else if (int_rx == ElectionInt){
+      election_initiator = 0;
       Election();                  
     }
     else if (int_rx == NetworkDiscoveryInt){
