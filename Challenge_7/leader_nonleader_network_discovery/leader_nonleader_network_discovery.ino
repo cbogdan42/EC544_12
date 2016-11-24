@@ -10,9 +10,11 @@ int reading = 1;                      // no pull-down resistor, so off is 1, set
 // Debounce Variables
 unsigned long lastDebounceTime = 0;   // the last time the output pin was toggled
 unsigned long debounceDelay = 50;     // the debounce time; increase if the output flickers
+int lastButtonState = 0;              // Previous button state
+int buttonState = 0;                  // Current button state
 
 // Check Button Press Routine
-void checkButton(){
+int checkButton(){
   // Check for button press - begin debounce code
   int reading = digitalRead(buttonPin);
 
@@ -49,19 +51,25 @@ int leaderPingCNT = 0;            // Leader Pings Network every leaderPingThresh
 int leaderPingThreashold = 10;    // Number of loops through leader code before pinging network
 int Network_Discovered = 0;       // Starts Network Discovery assuming we don't yet know the network
 int Network_Count = 0;            // Number of nodes in the network
-int network_UIDS = [];            // Array of Network IDs
+int network_UIDs[4];              // Array of Network IDs
 int election_pass;                // Node to pass to in an election
-int election_receive;             // Node to receive from for election
+int election_previous;             // Node to receive from for election
+int network_min;                  // Minimum UID in the network
+int network_max;                  // Maximum UID in the network
+
+/// Election constants
+int election_initiator = 0;       // Set to 1 if initiated election
+int electionconcluded = 0;       // Set to 1 to end election
 
 /// Infection Variables
 int infected = 0;                 // node is infected if this value is 1
 int network_infected = 0;         // allows leader to keep track of network infections
 
-/// XBee Setup Info
-SoftwareSerial XBee(2, 3); // RX, TX
-
 /// Serial Communication Info
 #include <SoftwareSerial.h>
+
+/// XBee Setup Info
+SoftwareSerial XBee(2, 3); // RX, TX
 
 /// Network Communication Values
 
@@ -73,22 +81,26 @@ int ElectionInt = 1;                  // Integer for Election Broadcast
 int InfectionSpreadInt = 2;           // Integer for Spreading Infection
 int InfectionClearInt = 3;            // Integer for Clearing Infection
 int NetworkDiscoveryInt = 4;          // Integer for Network Discovery
+int int_rx;                           // Variable to read in integers
 
 // Read in Single Value - used under normal operations to determine state changes
-void read_int(){
+int read_int(){
   if(XBee.available()){
-    in_message = XBee.read();
-    convert_message = in_message - 48;
+    int in_message = XBee.read();
+    int convert_message = in_message - 48;
     return convert_message;
   }
 }
 
 // Read in Packet - after certain state changes longer messages needed - may need to make it able to start at packetint values
-void read_packet(int packet_Length){
-  while (i<packetLength){
+String read_packet(int packet_Length){
+  int packet_length_count = 0;
+  String concat_message;
+  
+  while (packet_length_count<packet_Length){
   if(XBee.available()){
-    in_message = XBee.read();
-    convert_message = in_message - 48;
+    int in_message = XBee.read();
+    int convert_message = in_message - 48;
     String str_message = String(convert_message);
     Serial.println(in_message);
     Serial.println(convert_message);
@@ -96,16 +108,14 @@ void read_packet(int packet_Length){
     delay(10);
     concat_message = concat_message + str_message;
     Serial.println(concat_message);
-    i = i + 1;
-  }
+    packet_length_count = packet_length_count + 1;
+    }
   else{
     Serial.println("No Message");
     delay(10);
+    }
   }
-}
-out_message = concat_message;
-i = 0;
-concat_message = "";
+String out_message = concat_message;
 return out_message;
 }
 
@@ -113,6 +123,8 @@ return out_message;
 
 // Network Discovery Routine
 void NetworkDiscovery(){
+  int num_loops = 0;
+  
   // Broadcast NetworkDiscoveryInt 10 times
   for(int i = 0; i < 10; i++){
     XBee.write(NetworkDiscoveryInt);
@@ -124,12 +136,12 @@ void NetworkDiscovery(){
 
 
   // Alternate between sending out information and receiving information until 10 times not adding new info
-  Network_Discoverd = 0;
+  Network_Discovered = 0;
   
   while(Network_Discovered == 0){  
     for(int i = 0; i < 10; i++)
     {
-      out_message = String(NetworkDiscoveryInt) + String(UID);
+      String out_message = String(NetworkDiscoveryInt) + String(UID);
       XBee.println(out_message);
       delay(10);
     }
@@ -139,15 +151,15 @@ void NetworkDiscovery(){
       // check message availble
       if(XBee.available()){   
           // Read in message
-          in_message = read_packet(NetworkDiscoveryPL);
+          String in_message = read_packet(networkDiscoveryPL);
 
           // Check that it is a network discovery packet
           if (in_message.substring(0,1) == NetworkDiscoveryInt){
             // Check that it is not a broadcast
-            if (in_message.substing(1,2) != NetworkDiscoveryInt){
+            if (in_message.substring(1,2) != NetworkDiscoveryInt){
               // Pull out UID from message
               String in_UID = String(in_message.substring(0,1));
-              UID_known = 0;
+              int UID_known = 0;
 
               // check if UID has already been found
               for(int n = 0; n<= int(sizeof(network_UIDs)); n ++){
@@ -158,7 +170,7 @@ void NetworkDiscovery(){
 
               // If new UID, add data to database
               if (UID_known == 0){
-                network_UIDs[Network_Count] = in_message.substring(1,2);
+                network_UIDs[Network_Count] = strtol(in_message.substring(1,2).c_str(),NULL,10);
                 num_loops = 0;
                 Network_Count = Network_Count + 1;
               }
@@ -174,24 +186,38 @@ void NetworkDiscovery(){
     }
   }
 
+  // Identify min and max network UIDs
+  int temp_min = network_UIDs[0];
+  int temp_max = network_UIDs[0];
+  for(int i=1; i>Network_Count; i++){
+    if(network_UIDs[i]<temp_min){
+      temp_min = network_UIDs[i];
+    }
+    if(network_UIDs[i]>temp_max){
+      temp_max = network_UIDs[i];
+    }
+  }
+  network_min = temp_min;
+  network_max = temp_max;
+  
   // Identify passing partners for election - pass is node messages go to, previous is messages come from
+    int pass_found = 0;
+    int temp_pass = network_min;
     int previous_found = 0;
-    int temp_pass = min(networkUIDs);
-    int previous_found = 0;
-    int temp_previous = max(networkUIDs);
+    int temp_previous = network_max;
     
     for(int i = 0; i > Network_Count; i++){
-      int check = networkUIDs[n];
+      int check = network_UIDs[i];
       // Check for pass
-      if(check>myUID){
+      if(check>UID){
         if(check<=temp_pass){
           temp_pass = check;
           pass_found = 1;
         }
       }
       // Check for previous
-      if(check<myUID){
-        if(check >=){
+      if(check<UID){
+        if(check >=temp_previous){
           temp_previous = check;
           previous_found = 1;
         }
@@ -201,13 +227,13 @@ void NetworkDiscovery(){
       election_pass = temp_pass;
     }
     else{
-      election_pass = min(networkUIDs);
+      election_pass = network_min;
     }
     if(previous_found){
       election_previous = temp_previous;
     }
     else{
-      election_pass = max(networkUIDs);
+      election_pass = network_max;
     }
   
 }
@@ -219,26 +245,30 @@ void Election(){
   digitalWrite(RED_LED,HIGH);
   
   // Determine Leader - min UID in network library
-  proposed_leader = min(networkUIDs);
+  int proposed_leader = network_min;
   
   // Round 1 - pass along message to next after receiving message from previous 
   if(election_initiator){
     // If you started the election, just start broadcasting election
-    election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
-    XBee.write(election_message);
+    //String election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+    //XBee.write(election_message);
+    XBee.write(ElectionInt);
+    XBee.write(UID);
+    XBee.write(election_pass);
+    XBee.write(proposed_leader);
   }
   else{
     // If you didn't start the election, wait for a message from your previous node
     int previousreceived = 0;
     while(previousreceived == 0){
-      election_packet = read_packet();
+      String election_packet = read_packet(electionPL);
       //check its an election packet
       if(election_packet.substring(0,1) == ElectionInt){
         // check its from the previous
         if(election_packet.substring(1,2) == election_previous){
           // Set previous_received and pass along message
           previousreceived = 1;
-          election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+          String election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
         }
       }
       
@@ -250,26 +280,32 @@ void Election(){
     // Wait for previous round to conclude
     int previousreceived = 0;
     while(previousreceived == 0){
-      election_packet = read_packet();
+      String election_packet = read_packet(electionPL);
       //check its an election packet
       if(election_packet.substring(0,1) == ElectionInt){
         // check its from the previous
         if(election_packet.substring(1,2) == election_previous){
           // Set previous_received and pass along message with proposed leader
           previousreceived = 1;
-          election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+          String election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
         }
       }
+    }
     // If you started the election, just start broadcasting election
-    election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
-    XBee.write(election_message);
+    //String election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
+    XBee.write(ElectionInt);
+    XBee.write(UID);
+    XBee.write(election_pass);
+    XBee.write(proposed_leader);
+    
 
     // Wait for second round to conclude
-    int previousreceived = 0;
+    previousreceived = 0;
     int electionconcluded = 0;
+    String network_proposed;
     
     while(previousreceived == 0){
-      election_packet = read_packet();
+      String election_packet = read_packet(electionPL);
       //check its an election packet
       if(election_packet.substring(0,1) == ElectionInt){
         // check its from the previous
@@ -285,13 +321,15 @@ void Election(){
         }
       }
   }
+    }
   else{
     // If you didn't start the election, wait for a message from your previous node then compare
     int previousreceived = 0;
-    int electionconcluded = 0;
+    electionconcluded = 0;
+    String network_proposed;
     
     while(previousreceived == 0){
-      election_packet = read_packet();
+      String election_packet = read_packet(electionPL);
       //check its an election packet
       if(election_packet.substring(0,1) == ElectionInt){
         // check its from the previous
@@ -310,7 +348,7 @@ void Election(){
   }
 
   if (electionconcluded == 0){
-    Network_Discovery();
+    NetworkDiscovery();
   }
   else{
   digitalWrite(BLUE_LED, LOW);
@@ -381,7 +419,7 @@ void loop()
       Election();                  
     }
     else if (int_rx == NetworkDiscoveryInt){
-      Network_Discovery();
+      NetworkDiscovery();
     }
     
 	  if(infected){
@@ -403,7 +441,7 @@ void loop()
       digitalWrite(GREEN_LED, HIGH);
       
       // Check if button pressed (== 0)
-      if(check_button == 0){
+      if(checkButton == 0){
         // Get Infected
         infected = 1;
         // Reset LEDs
@@ -446,7 +484,7 @@ void loop()
       Election();                  
     }
     else if (int_rx == NetworkDiscoveryInt){
-      Network_Discovery();
+      NetworkDiscovery();
     }
     else if (int_rx == InfectionSpreadInt){
       // Set Network_Infected
