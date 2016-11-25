@@ -1,5 +1,5 @@
 /// The following Constants need to be set for each Arduino 
-const int UID = 2;                // UID of the current node - do not use UID = 2 (to distinguish network discovery blasts)
+const int UID = 5;               // UID of the current node - do not use UID = 2 (to distinguish network discovery blasts)
 
 /// Button Variables
 
@@ -9,7 +9,7 @@ int reading = 1;                      // no pull-down resistor, so off is 1, set
 
 // Debounce Variables
 unsigned long lastDebounceTime = 0;   // the last time the output pin was toggled
-unsigned long debounceDelay = 50;     // the debounce time; increase if the output flickers
+unsigned long debounceDelay =5;// the debounce time; increase if the output flickers
 int lastButtonState = 0;              // Previous button state
 int buttonState = 0;                  // Current button state
 
@@ -76,11 +76,16 @@ SoftwareSerial XBee(2, 3); // RX, TX
 // Packet Lengths
 int networkDiscoveryPL = 2;           // Packet Length for Network Discovery Messages - 'NetworkDiscoveryInt + FromUID
 int electionPL = 4;                   // Packet Length for Election - 'ElectionInt + FromUID + ToUID + ProposedLeader'
-int LeaderBroadcastInt = 0;           // Integer for Leader Ping
-int ElectionInt = 1;                  // Integer for Election Broadcast
-int InfectionSpreadInt = 2;           // Integer for Spreading Infection
-int InfectionClearInt = 3;            // Integer for Clearing Infection
-int NetworkDiscoveryInt = 4;          // Integer for Network Discovery
+char LeaderBroadcastChar = '0';           // Char for Leader Ping
+char ElectionChar = '1';                  // Char for Election Broadcast
+char InfectionSpreadChar = '2';           // Char for Spreading Infection
+char InfectionClearChar = '3';            // Char for Clearing Infection
+char NetworkDiscoveryChar= '4';           // Char for Network Discovery
+int LeaderBroadcastInt = 0;               // Int for... 
+int ElectionInt = 1;
+int InfectionSpreadInt = 2;
+int InfectionClearInt = 3;
+int NetworkDiscoveryInt = 4;
 int int_rx;                           // Variable to read in integers
 
 // Read in Single Value - used under normal operations to determine state changes
@@ -127,32 +132,35 @@ void NetworkDiscovery(){
   
   // Broadcast NetworkDiscoveryInt 10 times
   for(int i = 0; i < 10; i++){
-    XBee.write(NetworkDiscoveryInt);
+    XBee.write(NetworkDiscoveryChar);
     delay(10);
   }
   
   // Let Network Go Silent
   delay(100);
 
-
   // Alternate between sending out information and receiving information until 10 times not adding new info
   Network_Discovered = 0;
   
   while(Network_Discovered == 0){  
+
+    
     for(int i = 0; i < 10; i++)
     {
       String out_message = String(NetworkDiscoveryInt) + String(UID);
       XBee.println(out_message);
       delay(10);
     }
+    
     // Listen for other IDs
     for(int i = 0; i < 10; i++)
-    {
+    {          
       // check message availble
-      if(XBee.available()){   
+      if(XBee.available()){ 
+
+          int check = XBee.read();
           // Read in message
           String in_message = read_packet(networkDiscoveryPL);
-
           // Check that it is a network discovery packet
           if (in_message.substring(0,1) == NetworkDiscoveryInt){
             // Check that it is not a broadcast
@@ -178,9 +186,10 @@ void NetworkDiscovery(){
             }
           }
        }
+       
     
     }
-    num_loops = num_loops++;
+    num_loops = num_loops + 1;
     if (num_loops > 10){
       Network_Discovered = 1;
     }
@@ -235,6 +244,9 @@ void NetworkDiscovery(){
     else{
       election_pass = network_max;
     }
+    for(int i = 0;i<Network_Count;i++){
+      Serial.println(network_UIDs[i]);
+    }
   
 }
 // Election Routine
@@ -252,7 +264,7 @@ void Election(){
     // If you started the election, just start broadcasting election
     //String election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
     //XBee.write(election_message);
-    XBee.write(ElectionInt);
+    XBee.write(ElectionChar);
     XBee.write(UID);
     XBee.write(election_pass);
     XBee.write(proposed_leader);
@@ -293,7 +305,7 @@ void Election(){
     }
     // If you started the election, just start broadcasting election
     //String election_message = String(ElectionInt) + String(UID) + String(election_pass) + String(proposed_leader);
-    XBee.write(ElectionInt);
+    XBee.write(ElectionChar);
     XBee.write(UID);
     XBee.write(election_pass);
     XBee.write(proposed_leader);
@@ -369,6 +381,18 @@ void setup()
   pinMode(GREEN_LED, OUTPUT);
   pinMode(BLUE_LED, OUTPUT);
 
+  // Initialize Button
+  pinMode(buttonPin,INPUT);
+  // Run 10 check buttons to get over initial weird thing
+  for (int i=0; i<20;i++){
+    checkButton();
+  }
+
+  // Set to High to show in NetworkDiscovery
+  digitalWrite(BLUE_LED,HIGH);
+  digitalWrite(GREEN_LED, HIGH);
+  digitalWrite(RED_LED, HIGH);
+
   // First Network Discovery
   NetworkDiscovery();
 
@@ -397,7 +421,7 @@ void loop()
   
 	//Non Leader Case
 	case 0:
- 
+    
     // Turn off Blue LED
     digitalWrite(BLUE_LED, LOW);
 
@@ -408,9 +432,14 @@ void loop()
     }
 
     // Read in State Message
-    int_rx = read_int();
+    if(XBee.available()){
+      int_rx = read_int();
+    }
+    else{
+      int_rx = 9;           // 9 has no currently assigned meaning
+    }
 
-    // Check if need to start Election, Network Discovery or Reset Leader Count
+    // Check if need to start Election, Network Discovery, get Infected or Reset Leader Count
     if (int_rx == LeaderBroadcastInt){
       leader_time = 0;
     }
@@ -421,8 +450,14 @@ void loop()
     else if (int_rx == NetworkDiscoveryInt){
       NetworkDiscovery();
     }
+    else if (int_rx == InfectionSpreadInt){
+      infected = 1;
+    }
     
 	  if(infected){
+      // Set LEDs
+      digitalWrite(RED_LED, HIGH);
+      digitalWrite(GREEN_LED, LOW);
       // If int_rx = InfectionClearInt, clear infection, else broadcast infection
       if(int_rx == InfectionClearInt){
         // Clear Infection
@@ -431,7 +466,9 @@ void loop()
 	      digitalWrite(GREEN_LED, HIGH);
 	      }
 	    else{
-        XBee.write('InfectionSpreadInt');
+        XBee.write(InfectionSpreadChar);
+        Serial.write("Spreading Infection");
+        delay(1000);
 	    }
 	  }
 	  // Not Infected - Check button for infection
@@ -439,9 +476,11 @@ void loop()
       // Set LEDs to Not Infected Default
       digitalWrite(RED_LED, LOW);
       digitalWrite(GREEN_LED, HIGH);
+      Serial.println(infected);
       
       // Check if button pressed (== 0)
-      if(checkButton == 0){
+      int buttonPress = checkButton();
+      if(buttonPress == 0){
         // Get Infected
         infected = 1;
         // Reset LEDs
@@ -472,14 +511,25 @@ void loop()
     leaderPingCNT = leaderPingCNT + 1;
     
     // Read in State Message
-    int_rx = read_int();
-
+    // Read in State Message
+    if(XBee.available()){
+      int_rx = read_int();
+    }
+    else{
+      int_rx = 9;           // 9 has no currently assigned meaning
+    }
+//    Serial.println("int_rx");
+//    Serial.println(int_rx);
+    if(int_rx == 2){
+      Serial.println("UGH");
+    }
+    
     // Check if need to start Election, Network Discovery, Network Infection or Broadcast Leader Ping
     if (leaderPingCNT > leaderPingThreashold){
-      XBee.write(LeaderBroadcastInt);
+      XBee.write(LeaderBroadcastChar);
       leaderPingCNT = 0;
     }
-    else if (int_rx == ElectionInt){
+    else if (int_rx == int(ElectionInt)){
       election_initiator = 0;
       Election();                  
     }
@@ -489,20 +539,23 @@ void loop()
     else if (int_rx == InfectionSpreadInt){
       // Set Network_Infected
       network_infected = 1;
+      Serial.println("Network Infected");
     }
 
     // Check button press
-    if(checkButton() == 0){
+    int buttonPress = checkButton();
+    if(buttonPress == 0){
       // Send Clear Infection Message
-      XBee.write(InfectionClearInt);
+      XBee.write(InfectionClearChar);
+      delay(10);
 
       // Reset Network Infection Status & LEDs
       network_infected = 0;
       digitalWrite(RED_LED, LOW);
       digitalWrite(GREEN_LED, HIGH);
-      
+    
     }
-
+    delay(10);
 	  break;
 	}
 }
