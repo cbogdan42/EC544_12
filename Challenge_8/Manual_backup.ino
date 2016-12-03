@@ -10,7 +10,7 @@
 #define ESC_PIN 9
 
 //Threshold for distance difference
-#define max_threshold 90
+#define max_threshold 100
 #define min_threshold 40
 
 //XBEE pins
@@ -58,7 +58,10 @@ float output= 0;
 
 long pulse, inches, cm;
 int arg;
+int count;
 
+int speed[7] = {75,90,105,90,75,90,105};
+int directions[7] = {45,90,135,90,45,90,135};
 SoftwareSerial xbee(2, 3); // RX, TX
 
 void setup()
@@ -83,6 +86,7 @@ void setup()
   digitalWrite(LIDAR_OUTPUT, LOW); // Set trigger LOW for continuous read
 
   arg = 1;  
+  count = 0;
   calibrateESC();
 }
 
@@ -114,86 +118,117 @@ int check_front_sensor()
   }
   return 1;
 }
-void PID(int arg)
+void PID(int arg, int count)
 {
-  if(arg)
-  { 
-    ultrasonic_flag = check_front_sensor();      
-
-    if(!ultrasonic_flag)
+  switch(arg)
+  {
+   
+    case 0:
     {
-      wheels.write(90);
+      Serial.println("Remote stop");
       esc.write(90);
-      Serial.println("STOP");
+      wheels.write(90);
+      break;
     }
+    case 1:
+    {  
+      //Serial.println("Normal");
+      ultrasonic_flag = check_front_sensor();      
 
-    else
-    {
-      //Serial.println("GO");      
-      wheels.write(75);  
-
-      pulse1 = pulseIn(pwPin1, HIGH);
-      distance1 = (pulse1*2.54)/149;
-      pulse2 = pulseIn(pwPin2, HIGH);
-      distance2 = (pulse2*2.54)/149;
-      
-      /*if(abs(distance2-distance1)>max_threshold)        //Don't consider sensor readings if the difference in distance between the two sensors is greater than a particular value
+      if(!ultrasonic_flag)
       {
-        esc.write(90);                  
+        wheels.write(90);
+        esc.write(90);
+        Serial.println("STOP");
       }
 
       else
       {
-        if(distance1 > 1.8*old_distance1 && distance1 < 3*old_distance1)
-          distance1 = old_distance1;
-        if(distance2 > 2*old_distance2 && distance2 < 3*old_distance2)
-          distance2 = old_distance2;
+        //Serial.println("GO");      
+        wheels.write(75);  
+
+        pulse1 = pulseIn(pwPin1, HIGH);
+        distance1 = (pulse1*2.54)/149;
+        pulse2 = pulseIn(pwPin2, HIGH);
+        distance2 = (pulse2*2.54)/149;
         
-      }*/
+        /*Serial.println("Before");
+        Serial.print("Distance1:");
+        Serial.println(distance1);
+        Serial.print("Distance2:");
+        Serial.println(distance2); 
+        */
+        
+        if(distance2 > distance1 + max_threshold)        //Don't consider sensor readings if the difference in distance between the two sensors is greater than a particular value
+        {
+          distance2 = distance1;      
+        }
 
-      if(distance2 > distance1 + max_threshold)        //Don't consider sensor readings if the difference in distance between the two sensors is greater than a particular value
-      {
-        distance2 = distance1;      
-      }
+        if(distance1 >distance2 + max_threshold)        //Don't consider sensor readings if the difference in distance between the two sensors is greater than a particular value
+        {
+          distance1 = distance2;      
+        }      
 
-      if(distance1 >distance2 + max_threshold)        //Don't consider sensor readings if the difference in distance between the two sensors is greater than a particular value
-      {
-        distance1 = distance2;      
-      }      
-
-/*      Serial.println("After");
-      Serial.print("Distance1:");
-      Serial.println(distance1);
-      Serial.print("Distance2:");
-      Serial.println(distance2); 
-*/
-      error = distance2 - distance1;    
-
-      integral = integral + (error*dt);
-      derivative = (error-previous_error)/dt;
-      output = (Kp*error) + (Ki*integral) + (Kd*derivative);
-      previous_error = error;
       
-      esc.write(90 - output);
-    }
-  }
-  else
-  {
-    esc.write(90);
-    wheels.write(90);
-  }
-}
+        /*Serial.println("After");
+        Serial.print("Distance1:");
+        Serial.println(distance1);
+        Serial.print("Distance2:");
+        Serial.println(distance2); */
+      
 
+        error = distance2 - distance1;    
+
+        integral = integral + (error*dt);
+        derivative = (error-previous_error)/dt;
+        output = (Kp*error) + (Ki*integral) + (Kd*derivative);
+        previous_error = error;
+        
+        esc.write(90 - output);
+      }
+  
+      break;
+    }
+
+    case 2:
+    {
+
+      if(count<7)
+      {
+        esc.write(directions[count]);
+        wheels.write(speed[count]);
+        Serial.println("Directions");
+      }
+      else
+      {
+        esc.write(90);
+        wheels.write(90);
+        Serial.println("No");
+      }
+      break;
+    }
+
+    default:
+    {
+      Serial.println("Invalid argument");
+      esc.write(90);
+      wheels.write(90);
+      break;
+    }
+  }  
+}
 
 void loop()
 {
+   
    if (xbee.available()) 
    {
      byte A = xbee.read();
-     if(A==49)
-      arg = 1;
-     else
-      arg = 0;
+     arg = A-49;
    }
-  PID(arg);
+//   arg = 2;
+
+  PID(arg,count);
+  count++;
+  //delay(1000);
 }
