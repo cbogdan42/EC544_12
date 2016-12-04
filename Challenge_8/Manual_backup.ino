@@ -1,18 +1,9 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
-//Ultrasonic sensors
-#define pwPin1 10       //INPUT
-#define pwPin2 11
 
-//Crawler pins
-#define WHEELS_PIN 8
-#define ESC_PIN 9
 
-//Threshold for distance difference
-#define max_threshold 100
-#define min_threshold 40
-
+//Pin connections
 //XBEE pins
 #define xbee_RX  2
 #define xbee_TX  3
@@ -21,9 +12,30 @@
 #define LIDAR_OUTPUT 6
 #define LIDAR_INPUT 7
 
+//Crawler pins
+#define WHEELS_PIN 8		//speed
+#define ESC_PIN 9			//Steering
 
+//Ultrasonic sensors
+#define pwPin1 10       //Left sensor
+#define pwPin2 11		//Right sensor
+
+#define throttle_pin 4
+#define reverse_pin	 5
+#define left_pin 12
+#define right_pin 13
+
+//Constants used in code
 //Front sensor distance
-#define FRONT_MAX_DISTANCE 60
+#define FRONT_MIN_DISTANCE 70
+#define FRONT_MAX_DISTANCE 200
+
+#define turn_timeout 20000
+
+//Threshold for distance difference
+#define max_threshold 95
+#define min_threshold 40
+
 
 Servo wheels; // servo for turning the wheels
 Servo esc; // not actually a servo, but controlled like one!
@@ -35,16 +47,16 @@ double maxWheelOffset = 85; // maximum wheel turn magnitude, in servo 'degrees'
 
 float distance1;
 float distance2;
-float old_distance1;
-float old_distance2;
+float distance_temp;
 float pulse1;
 float pulse2;
+float pulse_temp;
 
 int ultrasonic_flag=1;
 
 float distance_front;
 float Ki = 0;
-float Kp = 1;
+float Kp = 1.0;
 float Kd = 0.1;
 
 
@@ -58,10 +70,16 @@ float output= 0;
 
 long pulse, inches, cm;
 int arg;
-int count;
+
+unsigned long old_time, new_time;
 
 int speed[7] = {75,90,105,90,75,90,105};
 int directions[7] = {45,90,135,90,45,90,135};
+
+int turn_right;
+int turn_left;
+
+
 SoftwareSerial xbee(2, 3); // RX, TX
 
 void setup()
@@ -81,12 +99,18 @@ void setup()
   pinMode(pwPin1, INPUT);
   pinMode(pwPin2, INPUT);  
 
+
+  pinMode(throttle_pin, INPUT);      
+  pinMode(reverse_pin, INPUT);      
+  pinMode(left_pin, INPUT);      
+  pinMode(right_pin, INPUT);      
+
   pinMode(LIDAR_OUTPUT, OUTPUT); // Set pin 2 as trigger pin
   pinMode(LIDAR_INPUT, INPUT); // Set pin 3 as monitor pin
   digitalWrite(LIDAR_OUTPUT, LOW); // Set trigger LOW for continuous read
 
   arg = 1;  
-  count = 0;
+  old_time = 0;
   calibrateESC();
 }
 
@@ -103,22 +127,76 @@ void calibrateESC()
     esc.write(90); // reset the ESC to neutral (non-moving) value
 }
 
+void reverse_and_turn()
+{
+  int esc_value;
+  //Get directions
+  pulse1 = pulseIn(pwPin1, HIGH);
+  distance1 = (pulse1*2.54)/149;
+  pulse2 = pulseIn(pwPin2, HIGH);
+  distance2 = (pulse2*2.54)/149;
+
+  //reverse
+  //Serial.println("Inside reverse and turn");
+  esc.write(90);
+  wheels.write(110);
+  delay(3000);
+  wheels.write(90);
+
+  //turn
+  esc.write(145);
+  wheels.write(70);
+  delay(3000);
+  esc.write(90);
+  wheels.write(90);
+}
+
 int check_front_sensor()
 {
   distance_front = pulseIn(LIDAR_INPUT, HIGH)/10; // Count how long the pulse is high in microseconds;
-  if (distance_front < FRONT_MAX_DISTANCE)
+  //Serial.println(distance_front);
+  if (distance_front < FRONT_MIN_DISTANCE)
   {
     delay(100);
     //read lidar again
     distance_front = pulseIn(LIDAR_INPUT, HIGH)/10;
-    if(distance_front < FRONT_MAX_DISTANCE)
-      return 0;
-    else
-      return 1;   //false alarm
+    if(distance_front < FRONT_MIN_DISTANCE)
+      reverse_and_turn();
+    return 1;
+  }
+  else if(distance_front > FRONT_MAX_DISTANCE)
+  {
+  	//check side distance
+  	pulse1 = pulseIn(pwPin1, HIGH);
+  	distance1 = (pulse1*2.54)/149;
+  	
+  	pulse2 = pulseIn(pwPin2, HIGH);
+  	distance2 = (pulse2*2.54)/149;
+        
+  	if(distance1>FRONT_MAX_DISTANCE)
+  	{
+  		//turn left
+        //Serial.println("Turn left");
+        
+        new_time = millis();
+		if(old_time == 0)				//update old_time only once
+        	old_time = new_time-(turn_timeout+1);
+
+        if(new_time-old_time > turn_timeout)
+	  	{
+	  		esc.write(90);
+	  		wheels.write(75);
+	  		delay(1500);
+	  		esc.write(90);
+	  		wheels.write(90);
+	  		reverse_and_turn();
+	  		old_time = new_time;
+	  	}
+  	}  
   }
   return 1;
 }
-void PID(int arg, int count)
+void PID(int arg)
 {
   switch(arg)
   {
@@ -152,12 +230,12 @@ void PID(int arg, int count)
         pulse2 = pulseIn(pwPin2, HIGH);
         distance2 = (pulse2*2.54)/149;
         
-        /*Serial.println("Before");
+        Serial.println("Before");
         Serial.print("Distance1:");
         Serial.println(distance1);
         Serial.print("Distance2:");
         Serial.println(distance2); 
-        */
+        
         
         if(distance2 > distance1 + max_threshold)        //Don't consider sensor readings if the difference in distance between the two sensors is greater than a particular value
         {
@@ -170,11 +248,11 @@ void PID(int arg, int count)
         }      
 
       
-        /*Serial.println("After");
+        Serial.println("After");
         Serial.print("Distance1:");
         Serial.println(distance1);
         Serial.print("Distance2:");
-        Serial.println(distance2); */
+        Serial.println(distance2);
       
 
         error = distance2 - distance1;    
@@ -192,20 +270,8 @@ void PID(int arg, int count)
 
     case 2:
     {
+    	Serial.println("Waiting for directions");
 
-      if(count<7)
-      {
-        esc.write(directions[count]);
-        wheels.write(speed[count]);
-        Serial.println("Directions");
-      }
-      else
-      {
-        esc.write(90);
-        wheels.write(90);
-        Serial.println("No");
-      }
-      break;
     }
 
     default:
@@ -219,16 +285,11 @@ void PID(int arg, int count)
 }
 
 void loop()
-{
-   
-   if (xbee.available()) 
-   {
-     byte A = xbee.read();
-     arg = A-49;
-   }
-//   arg = 2;
+{   
 
-  PID(arg,count);
-  count++;
+  arg = 1;
+
+  PID(arg);
   //delay(1000);
 }
+
