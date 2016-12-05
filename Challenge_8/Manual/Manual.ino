@@ -25,7 +25,8 @@
 #define left_pin 12
 #define right_pin 13
 
-
+#define Manual_Mode_pin 0
+#define Start_Stop_pin 1
 
 //Constants used in code
 //Front sensor distance
@@ -85,6 +86,9 @@ int turn_left;
 
 int previous_accelerate_state;
 int current_accelerate_state;
+
+int mode;
+int start;
 
 enum speed_state {
   carry_on = 0,
@@ -274,17 +278,17 @@ void steer()
 	if(turn_left>turn_right)
 	{
 		esc.write(turn_left*5 + 90);
-		Serial.println(turn_left*5 + 90);	
+		//Serial.println(turn_left*5 + 90);	
 	}
 	else if(turn_right>turn_left)
 	{
 		esc.write(90 - turn_right*5);
-		Serial.println(90 - turn_right*5);		
+		//Serial.println(90 - turn_right*5);		
 	}
 	else if(turn_right==turn_left)
 	{
 		esc.write(90);	
-		Serial.println(90);
+		//Serial.println(90);
 	}
 }
 
@@ -359,11 +363,11 @@ void PID(int arg)
         pulse2 = pulseIn(pwPin2, HIGH);
         distance2 = (pulse2*2.54)/149;
         
-        Serial.println("Before");
+        /*Serial.println("Before");
         Serial.print("Distance1:");
         Serial.println(distance1);
         Serial.print("Distance2:");
-        Serial.println(distance2); 
+        Serial.println(distance2); */
         
         
         if(distance2 > distance1 + max_threshold)        //Don't consider sensor readings if the difference in distance between the two sensors is greater than a particular value
@@ -377,11 +381,11 @@ void PID(int arg)
         }      
 
       
-        Serial.println("After");
+        /*Serial.println("After");
         Serial.print("Distance1:");
         Serial.println(distance1);
         Serial.print("Distance2:");
-        Serial.println(distance2);
+        Serial.println(distance2);*/
       
 
         error = distance2 - distance1;    
@@ -410,7 +414,6 @@ void PID(int arg)
 
     default:
     {
-      Serial.println(reverse);
       esc.write(90);
       wheels.write(90);
       break;
@@ -420,6 +423,20 @@ void PID(int arg)
 
 void loop()
 {   
-  arg = 2;
+  mode = analogRead(Manual_Mode_pin);
+  start = analogRead(Start_Stop_pin);
+  
+  if(mode == 0)
+  {
+  	if(start == 0)
+  		arg = 0;
+  	else
+  		arg = 1;
+  }	
+  
+  else
+  	arg = 2;
+  
   PID(arg);
 }
+
