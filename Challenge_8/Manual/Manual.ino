@@ -25,12 +25,16 @@
 #define left_pin 12
 #define right_pin 13
 
+
+
 //Constants used in code
 //Front sensor distance
 #define FRONT_MIN_DISTANCE 70
 #define FRONT_MAX_DISTANCE 200
 
 #define turn_timeout 20000
+
+
 
 //Threshold for distance difference
 #define max_threshold 95
@@ -79,6 +83,15 @@ int directions[7] = {45,90,135,90,45,90,135};
 int turn_right;
 int turn_left;
 
+int previous_accelerate_state;
+int current_accelerate_state;
+
+enum speed_state {
+  carry_on = 0,
+  forward = 1,
+  reverse = 2,
+  pause = 3
+};
 
 SoftwareSerial xbee(2, 3); // RX, TX
 
@@ -111,6 +124,10 @@ void setup()
 
   arg = 1;  
   old_time = 0;
+
+
+  previous_accelerate_state = carry_on;
+  
   calibrateESC();
 }
 
@@ -196,6 +213,118 @@ int check_front_sensor()
   }
   return 1;
 }
+
+void read_val(int pin)
+{
+	int temp, temp1;
+	switch(pin)
+	{
+		case left_pin:
+		{
+			temp = digitalRead(left_pin);
+			if(temp == 1)
+			{
+				if(turn_left < 10)
+					turn_left+=2;
+			}
+			
+			else
+			{
+				if(turn_left>0)
+					turn_left-=2;
+			}
+			break;
+		}
+
+		case right_pin:
+		{
+			temp = digitalRead(right_pin);
+			if(temp == 1)
+			{
+				if(turn_right < 10)
+					turn_right+=2;
+			}
+			
+			else
+			{
+				if(turn_right>0)
+					turn_right-=2;
+			}
+			break;
+		}
+
+		case throttle_pin:
+		{
+			temp = digitalRead(throttle_pin);
+			temp1 = digitalRead(reverse_pin);
+			set_speed(temp, temp1);
+			break;
+		}
+
+		default:
+		{
+			Serial.println("Invalid input to function");
+			break;
+		}
+	}
+}
+
+void steer()
+{
+	if(turn_left>turn_right)
+	{
+		esc.write(turn_left*5 + 90);
+		Serial.println(turn_left*5 + 90);	
+	}
+	else if(turn_right>turn_left)
+	{
+		esc.write(90 - turn_right*5);
+		Serial.println(90 - turn_right*5);		
+	}
+	else if(turn_right==turn_left)
+	{
+		esc.write(90);	
+		Serial.println(90);
+	}
+}
+
+
+void set_speed(int throttle, int reverse)
+{
+	if(throttle == 0)
+	{
+		if(reverse == 0)
+		{
+			current_accelerate_state = carry_on;
+			//Serial.println("00");
+		}
+
+		else
+		{
+			current_accelerate_state = reverse;	
+			wheels.write(120);
+			//Serial.println("01");
+		}
+	}
+
+	else
+	{
+		if(reverse == 0)
+		{
+			current_accelerate_state = forward;
+			wheels.write(70);
+			//Serial.println("10");
+		}
+
+		else
+		{
+			current_accelerate_state = pause;
+			wheels.write(90);
+			//Serial.println("11");			
+		}
+	}
+}
+
 void PID(int arg)
 {
   switch(arg)
@@ -270,13 +399,18 @@ void PID(int arg)
 
     case 2:
     {
-    	Serial.println("Waiting for directions");
-
+    	//Serial.println("Waiting for directions");
+    	read_val(left_pin);
+    	read_val(right_pin);
+    	read_val(throttle_pin);
+    	steer();
+    	delay(750);
+    	break;
     }
 
     default:
     {
-      Serial.println("Invalid argument");
+      Serial.println(reverse);
       esc.write(90);
       wheels.write(90);
       break;
@@ -286,10 +420,6 @@ void PID(int arg)
 
 void loop()
 {   
-
-  arg = 1;
-
+  arg = 2;
   PID(arg);
-  //delay(1000);
 }
-
