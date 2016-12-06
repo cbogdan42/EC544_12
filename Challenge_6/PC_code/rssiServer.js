@@ -12,10 +12,11 @@ var XBeeAPI = new xbee_api.XBeeAPI({
 var fs = require("fs");
 var region = 1;
 var portName = process.argv[2];
+var file_path = process.argv[3];
 
 var sampleDelay = 1000;
 
-var file_path = 'RSSI_data.txt';
+
 var second_file_path = 'data_rssi.txt';
 
 function write_to_file()
@@ -84,9 +85,6 @@ XBeeAPI.on("frame_object", function(frame) {
 	    fs.writeFile(file_path, string_to_write, (err) => {
 	      if (err) throw err;
 	    });
-      fs.writeFile(second_file_path, second_string, (err) => {
-        if (err) throw err;
-      });
   	}
   }
 });
