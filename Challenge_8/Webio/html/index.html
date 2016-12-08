@@ -1,27 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="viewport" content="height = device-height, width = device-width, user-scalable = no" />
-    <title> Challenge 8, Group 12: Crawler Interface </title>
-    <script type="text/javascript" src="/webiopi.js"></script>
-    <script type="text/javascript" src="/scripts/my_buttons.js"></script>
-    <style type = "text/css">
-    #state {
-        margin: 5px 5px 5px 5px;
-        width: 160px;
-        height: 45px;
-        font-size: 24pt;
-        font-weight: bold;
-        color: white;
-        text-align: center;
-        background-color; Blue;
-    }
-    </style>
+<!DOCTYPE html>
+<html lang="en">
 
-    <link rel="stylesheet" type="text/css" href="/styles/my_buttons.css">
-    <link rel="shortcut icon" sizes="196x196" href="/img/ON_button.png" />
+<head>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -29,9 +9,13 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>EC544_group12 challenges_charts demo</title>
+    <title>Challenge 8, Group 12: Crawler Interface</title>
+
+    <link rel="stylesheet" type="text/css" href="/styles/my_buttons.css">
+    <link rel="shortcut icon" sizes="196x196" href="/img/ON_button.png" />
 
     <!-- Bootstrap Core CSS -->
+    
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
@@ -51,26 +35,253 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-
-
-     <meta http-equiv="refresh" content="2">
+    
+     <!--meta http-equiv="refresh" content="2"-->
 </head>
 
-<h2> Testing some stuff </h2>
-Key Pressed: <span id= "kp"></span>
-<br />
-Key Code : <span id="kc"></span>
+<body id="page-top">
 
-<body>
-    </br>
-    </br>
-    <div id="content" align="center"></div>
-    <iframe src = "http://10.239.194.147:8081" height = 400 width = 400></iframe>
-    </br>
-    </br>
-    </br>
-    </br>
-    <h1>Position</h1>
-    <img id="myImage" src="images/img.jpg">
+    <nav id="mainNav" class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand page-scroll" href="#page-top">challenge 8</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <!--li>
+                        <a class="page-scroll" href="#about">About</a>
+                    </li-->
+                    <li>
+                        <a class="page-scroll" href="#services">Group members</a>
+                    </li>
+                    <!--li>
+                        <a class="page-scroll" href="#portfolio">Group members</a>
+                    </li-->
+                    <li>
+                        <a class="page-scroll" href="#contact">Video</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+
+    <header>
+        <div class="header-content">
+            <div class="header-content-inner">
+                <h1 id="homeHeading">Challenge 8 -Group 12 </h1>
+                <hr>
+                <p>our Task: create a system that drives your vehicle through an indoor course without operator (human) control.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!--section class="bg-primary" id="about">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 text-center">
+                    <h2 class="section-heading">Here is our design</h2>
+                    <hr class="light">
+                    <p class="text-faded"></p>
+                    <a href="#services" class="page-scroll btn btn-default btn-xl sr-button">Get Started!</a>
+                </div>
+            </div>
+        </div>
+    </section-->
+
+    <section id="services">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h2 class="section-heading">We are group 12</h2>
+                    <hr class="primary">
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 text-center">
+                    <div class="service-box">
+                         <img src="img/aravind.png" height =150 width =150>
+                        <h3>Aravind</h3>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 text-center">
+                    <div class="service-box">
+                        <img src="img/rikita.png" height =150 width =150>
+                        <h3>Ritika </h3>
+                        
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 text-center">
+                    <div class="service-box">
+                        <img src="img/steven.png" height =150 width =150>
+                        <h3>Steven</h3>
+                      
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 text-center">
+                    <div class="service-box">
+                        <img src="img/caity.png" height =150 width =150>
+                        <h3>Caity</h3>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!--section class="no-padding" id="portfolio">
+        <div class="container-fluid">
+            <div class="row no-gutter popup-gallery">
+                <div class="col-lg-4 col-sm-6">
+                    <a href="img/portfolio/fullsize/1.jpg" class="portfolio-box">
+                        <img src="img/portfolio/thumbnails/1.jpg" class="img-responsive" alt="">
+                        <div class="portfolio-box-caption">
+                            <div class="portfolio-box-caption-content">
+                                <div class="project-category text-faded">
+                                    Category
+                                </div>
+                                <div class="project-name">
+                                    Project Name
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="img/portfolio/fullsize/2.jpg" class="portfolio-box">
+                        <img src="img/portfolio/thumbnails/2.jpg" class="img-responsive" alt="">
+                        <div class="portfolio-box-caption">
+                            <div class="portfolio-box-caption-content">
+                                <div class="project-category text-faded">
+                                    Category
+                                </div>
+                                <div class="project-name">
+                                    Project Name
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="img/portfolio/fullsize/3.jpg" class="portfolio-box">
+                        <img src="img/portfolio/thumbnails/3.jpg" class="img-responsive" alt="">
+                        <div class="portfolio-box-caption">
+                            <div class="portfolio-box-caption-content">
+                                <div class="project-category text-faded">
+                                    Category
+                                </div>
+                                <div class="project-name">
+                                    Project Name
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="img/portfolio/fullsize/4.jpg" class="portfolio-box">
+                        <img src="img/portfolio/thumbnails/4.jpg" class="img-responsive" alt="">
+                        <div class="portfolio-box-caption">
+                            <div class="portfolio-box-caption-content">
+                                <div class="project-category text-faded">
+                                    Category
+                                </div>
+                                <div class="project-name">
+                                    Project Name
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="img/portfolio/fullsize/5.jpg" class="portfolio-box">
+                        <img src="img/portfolio/thumbnails/5.jpg" class="img-responsive" alt="">
+                        <div class="portfolio-box-caption">
+                            <div class="portfolio-box-caption-content">
+                                <div class="project-category text-faded">
+                                    Category
+                                </div>
+                                <div class="project-name">
+                                    Project Name
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <a href="img/portfolio/fullsize/6.jpg" class="portfolio-box">
+                        <img src="img/portfolio/thumbnails/6.jpg" class="img-responsive" alt="">
+                        <div class="portfolio-box-caption">
+                            <div class="portfolio-box-caption-content">
+                                <div class="project-category text-faded">
+                                    Category
+                                </div>
+                                <div class="project-name">
+                                    Project Name
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section-->
+
+    <aside class="bg-dark">
+        <div class="container text-center">
+            <div class="call-to-action">
+                <h2>Functions</h2>
+                <a href="http://localhost:3000/charts" class="btn btn-default btn-xl sr-button">MANUAL</a>
+            </div>
+            <div class="call-to-action">
+                <a href="http://localhost:3000/data_display" class="btn btn-default btn-xl sr-button">AUTOMATIC</a>
+            </div>
+        </div>
+    </aside>
+
+    <section id="contact">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-0 text-center">
+                    <h2 class="section-heading">Webcam</h2>
+                    <hr class="primary">
+                    <iframe src = "http://10.239.194.147:8081" height = 400 width = 400></iframe>
+                </div>
+            
+                <div class="col-md-6 col-md-offset-0 text-center">
+                    
+                    <h2 class="section-heading">Position</h2>
+                    <hr class="primary">
+                    <img src=" img/knn.png" height="400" width ="400"> 
+                </div>
+             </div>
+        </div>
+    </section>
+    <script type="text/javascript" src="/webiopi.js"></script>
+    <script type="text/javascript" src="/scripts/my_buttons.js"></script>
+    <!-- jQuery -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="vendor/scrollreveal/scrollreveal.min.js"></script>
+    <script src="vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
+
+    <!-- Theme JavaScript -->
+    <script src="js/creative.min.js"></script>
+
 </body>
+
 </html>
