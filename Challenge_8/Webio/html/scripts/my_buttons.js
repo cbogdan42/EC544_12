@@ -45,5 +45,15 @@ webiopi().ready(function() {
         webiopi().callMacro("AUTONOMOUS")
         })
     content.append(button);
+
+    button = webiopi().createButton("button", "AUTO - START", function() {
+        webiopi().callMacro("ASTART")
+        })
+    content.append(button);
+
+    button = webiopi().createButton("button", "AUTO - STOP", function() {
+        webiopi().callMacro("ASTOP")
+        })
+    content.append(button);
     
   });

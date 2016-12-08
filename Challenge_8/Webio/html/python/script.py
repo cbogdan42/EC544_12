@@ -76,3 +76,12 @@ def BACKWARD():
     GPIO.output(BPIN,GPIO.HIGH)
     # Set FPIN LOW
     GPIO.output(FPIN,GPIO.LOW)
+
+@webiopi.macro
+def ASTART():
+    # Set ASPIN HIGH
+    GPIO.output(ASPIN,GPIO.HIGH)
+
+def ASTOP():
+    # Set ASPIN LOW
+    GPIO.output(ASPIN,GPIO.LOW)
