@@ -1,5 +1,6 @@
 webiopi().ready(function() {
-    
+
+    // Keyboard input code    
     document.onkeydown = function(event) {
         var key_press = String.fromCharCode(event.keyCode);
         var key_code = event.keyCode;
@@ -21,6 +22,8 @@ webiopi().ready(function() {
         }
     }
     
+
+    // Button Stuff
     var STATE = function(macro, args, respons) {
         var state = response.split("");
         // Following lines use jQuery functions

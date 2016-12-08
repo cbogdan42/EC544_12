@@ -11,12 +11,12 @@ State = 1
 GPIO.setmode(GPIO.BOARD)
 
 # Declare useful pins
-LPIN = 1		# Left Pin
-RPIN = 2		# Right Pin
-FPIN = 3		# Forward Pin
-BPIN = 4		# Backward Pin
-MPIN = 5		# Mode Pin
-ASPIN = 6		# Automatic Start Pin when in Automatic Mode
+LPIN = 3		# Left Pin
+RPIN = 5		# Right Pin
+FPIN = 7		# Forward Pin
+BPIN = 11		# Backward Pin
+MPIN = 13		# Mode Pin
+ASPIN = 15		# Automatic Start Pin when in Automatic Mode
 
 # Setup pins
 GPIO.setup(LPIN, GPIO.OUT)
