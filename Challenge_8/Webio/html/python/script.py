@@ -1,21 +1,30 @@
 import webiopi
 from time import sleep
-from webiopi.devices.serial import Serial
+#from webiopi.devices.serial import Serial
 import RPi.GPIO as GPIO
 
 State = 1
 #ser = serial.Serial('/dev/ttyUSB0', 9600, timeout = 1)
-serial = Serial("ttyUSB0", 9600)
+#serial = Serial("ttyUSB0", 9600)
 
-STATE_PIN = 1           # This pin controls whether the robot is in manual(1) or automatic (0)
-LEFT_RIGHT_PIN = 2      # This pin controls whether the robot turns right or left
-FWD_BWD_PIN = 3         # This pin controls whether the robot goes forward or backward
+# Set GPIO numbering scheme
+GPIO.setmode(GPIO.BOARD)
+
+# Declare useful pins
+LPIN = 1		# Left Pin
+RPIN = 2		# Right Pin
+FPIN = 3		# Forward Pin
+BPIN = 4		# Backward Pin
+MPIN = 5		# Mode Pin
+ASPIN = 6		# Automatic Start Pin when in Automatic Mode
 
 # Setup pins
-GPIO.setup(STATE_PIN,GPIO.OUT)
-GPIO.setup(LEFT_RIGHT_PIN,GPIO.OUT)
-GPIO.setup(FWD_BWD_PIN, GPIO.OUT)
-
+GPIO.setup(LPIN, GPIO.OUT)
+GPIO.setup(RPIN, GPIO.OUT)
+GPIO.setup(FPIN, GPIO.OUT)
+GPIO.setup(BPIN, GPIO.OUT)
+GPIO.setup(MPIN, GPIO.OUT)
+GPIO.setup(ASPIN, GPIO.OUT)
 
 
 def setup():
@@ -23,33 +32,47 @@ def setup():
     
     # set default
     State = 0
-    serial.writeString("0")
+    #serial.writeString("0")
     print('Set Defaults')
 
 def loop():
     global read_value
-    read_value = serial.readString()    
+    #read_value = serial.readString()    
 
 @webiopi.macro
 def MANUAL():
-    GPIO.output(STATE_PIN,GPIO.LOW)
+    # Set Mode pin to Low
+    GPIO.output(MPIN,GPIO.LOW)
 
 @webiopi.macro
 def AUTONOMOUS():
-    GPIO.output(STATE_PIN,GPIO.HIGH)
+    # Set Mode pin to High
+    GPIO.output(MPIN,GPIO.HIGH)
 
 @webiopi.macro
 def LEFT():
-    GPIO.output(LEFT_RIGHT_PIN,GPIO.HIGH)
+    # Set LPIN HIGH
+    GPIO.output(LPIN,GPIO.HIGH)
+    # Set RPIN LOW
+    GPIO.output(RPIN,GPIO.LOW)
 
 @webiopi.macro
 def RIGHT():
-    GPIO.output(LEFT_RIGHT_PIN,GPIO.LOW)
-
+    # Set RPIN HIGH
+    GPIO.output(RPIN,GPIO.HIGH)
+    # Set LPIN HIGH
+    GPIO.output(LPIN,GPIO.LOW)
+    
 @webiopi.macro
 def FORWARD():
-    GPIO.output(FWD_BWD_PIN,GPIO.HIGH)
+    # Set FPIN HIGH
+    GPIO.output(FPIN,GPIO.HIGH)
+    # Set BPIN LOW
+    GPIO.output(RPIN,GPIO.LOW)
 
 @webiopi.macro
 def BACKWARD():
-    GPIO.output(FWD_BWD_PIN,GPIO.LOW)
+    # Set BPIN HIGH
+    GPIO.output(BPIN,GPIO.HIGH)
+    # Set FPIN LOW
+    GPIO.output(FPIN,GPIO.LOW)

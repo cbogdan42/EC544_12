@@ -1,4 +1,26 @@
 webiopi().ready(function() {
+    
+    document.onkeydown = function(event) {
+        var key_press = String.fromCharCode(event.keyCode);
+        var key_code = event.keyCode;
+
+        document.getElementById('kp').innerHTML = key_press; 
+        document.getElementById('kc').innerHTML = key_code;
+        
+        if(key_code == 37){
+            webiopi().callMacro("LEFT");
+        }
+        else if(key_code == 39){
+            webiopi().callMacro("RIGHT");
+        }
+        else if(key_code == 38){
+            webiopi().callMacro("FORWARD");
+        }
+        else if(key_code == 40){
+            webiopi().callMacro("BACKWARD");
+        }
+    }
+    
     var STATE = function(macro, args, respons) {
         var state = response.split("");
         // Following lines use jQuery functions
@@ -18,26 +40,6 @@ webiopi().ready(function() {
 
     button = webiopi().createButton("button", "AUTONOMOUS", function() {
         webiopi().callMacro("AUTONOMOUS")
-        })
-    content.append(button);
-
-    button = webiopi().createButton("button", "FORWARD", function() {
-        webiopi().callMacro("FORWARD")
-        })
-    content.append(button);
-
-    button = webiopi().createButton("button", "BACKWARD", function() {
-        webiopi().callMacro("BACKWARD")
-        })
-    content.append(button);
-
-    button = webiopi().createButton("button", "LEFT", function() {
-        webiopi().callMacro("LEFT")
-        })
-    content.append(button);
-
-    button = webiopi().createButton("button", "RIGHT", function() {
-        webiopi().callMacro("RIGHT")
         })
     content.append(button);
     
