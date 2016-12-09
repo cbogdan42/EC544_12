@@ -45,14 +45,12 @@
 //Turning
 #define turn_angle 145
 #define turn_speed 80
-#define turn_time 7000
+#define turn_time 6000
 
 
 //Manual turning
 #define MANUAL_LEFT_TURN 140
 #define MANUAL_RIGHT_TURN 50
-#define MANUAL_FORWARD 70
-#define MANUAL_REVERSE 120
 
 Servo wheels; // servo for turning the wheels
 Servo esc; // not actually a servo, but controlled like one!
@@ -73,11 +71,9 @@ int ultrasonic_flag=1;
 
 float distance_front;
 float Ki = 0;
-//float Kp = 0.95;
-//float Kd = 0.1;
+float Kp = 0.95;
+float Kd = 0.1;
 
-float Kp = 1.5;
-float Kd = 0;
 
 int dt = 100;
 
@@ -370,7 +366,7 @@ void set_speed(int throttle, int reverse)
     else
     {
       current_accelerate_state = reverse; 
-      wheels.write(MANUAL_REVERSE);
+      wheels.write(120);
       Serial.println("reverse");
     }
   }
@@ -380,7 +376,7 @@ void set_speed(int throttle, int reverse)
     if(reverse == 0)
     {
       current_accelerate_state = forward;
-      wheels.write(MANUAL_FORWARD);
+      wheels.write(70);
       Serial.println("forward");
     }
 
@@ -507,9 +503,4 @@ void loop()
  
   PID(arg);
 }
-
-
-
-
-
 
