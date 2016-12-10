@@ -51,8 +51,8 @@
 //Manual turning
 #define MANUAL_LEFT_TURN 140
 #define MANUAL_RIGHT_TURN 50
-#define MANUAL_FORWARD 70
-#define MANUAL_REVERSE 120
+#define MANUAL_FORWARD 80
+#define MANUAL_REVERSE 110
 
 Servo wheels; // servo for turning the wheels
 Servo esc; // not actually a servo, but controlled like one!
@@ -469,11 +469,11 @@ void PID(int arg)
     case 2:
     {
       //Serial.println("Waiting for directions");
-      read_val(left_pin);
       read_val(right_pin);
+      read_val(left_pin);
       read_val(throttle_pin);
       steer();
-      delay(750);
+      //delay(750);
       break;
     }
 
@@ -507,9 +507,4 @@ void loop()
  
   PID(arg);
 }
-
-
-
-
-
 
